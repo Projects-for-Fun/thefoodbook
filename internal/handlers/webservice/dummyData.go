@@ -18,10 +18,15 @@ func (w *Webservice) GetDummyData(rw http.ResponseWriter, r *http.Request) {
 
 	rw.Header().Set("random-header", "dummy data")
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("dummy search " + id))
+
+	_, err := rw.Write([]byte("dummy search " + id))
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		// TODO - log
+	}
 }
 
-func (w *Webservice) GetDummyDataForId(rw http.ResponseWriter, r *http.Request) {
+func (w *Webservice) GetDummyDataForID(rw http.ResponseWriter, r *http.Request) {
 	// Context cancelled
 	if r.Context().Err() != nil {
 		return
@@ -34,5 +39,10 @@ func (w *Webservice) GetDummyDataForId(rw http.ResponseWriter, r *http.Request) 
 
 	rw.Header().Set("random-header", "dummy data")
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("dummy " + id))
+
+	_, err := rw.Write([]byte("dummy " + id))
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		// TODO - log
+	}
 }

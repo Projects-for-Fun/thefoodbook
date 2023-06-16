@@ -22,7 +22,7 @@ func RunWebservice(config *configs.Config, logger zerolog.Logger) error {
 	middleware.RequestIDHeader = "X-Correlation-Id"
 
 	router.Use(middleware.Timeout(5 * time.Second))
-	router.Use(mws.CorrelationId)
+	router.Use(mws.CorrelationID)
 	router.Use(mws.LoggerWithRecoverer(logger))
 
 	router.Get("/status", func(w http.ResponseWriter, r *http.Request) {})
@@ -31,7 +31,7 @@ func RunWebservice(config *configs.Config, logger zerolog.Logger) error {
 		router.With(mws.Paginate).Get("/", w.GetDummyData) // GET /dummy or GET /dummy?id=1
 
 		router.Route("/{id}", func(router chi.Router) {
-			router.Get("/", w.GetDummyDataForId) // GET /dummy/1
+			router.Get("/", w.GetDummyDataForID) // GET /dummy/1
 		})
 	})
 

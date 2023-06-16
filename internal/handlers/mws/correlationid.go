@@ -10,7 +10,7 @@ import (
 var CorrelationIDHeader = "X-Correlation-Id"
 var RequestIDKey = "CorrelationKey"
 
-func CorrelationId(next http.Handler) http.Handler {
+func CorrelationID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
