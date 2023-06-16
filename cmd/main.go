@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/Projects-for-Fun/thefoodbook/cmd/webservice"
-	"github.com/Projects-for-Fun/thefoodbook/configs"
-	"github.com/rs/zerolog"
 	"log"
 	"os"
 	"time"
+
+	"github.com/Projects-for-Fun/thefoodbook/cmd/webservice"
+	"github.com/Projects-for-Fun/thefoodbook/configs"
+	"github.com/rs/zerolog"
 )
 
 func initializeDependencies(_ context.Context) (*configs.Config, zerolog.Logger) {
