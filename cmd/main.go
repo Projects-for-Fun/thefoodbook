@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func initializeDependencies(ctx context.Context) (*configs.Config, zerolog.Logger) {
+func initializeDependencies(_ context.Context) (*configs.Config, zerolog.Logger) {
 	config, err := configs.NewConfig()
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to set project configuration: %v", err))

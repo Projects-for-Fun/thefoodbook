@@ -2,11 +2,12 @@ package mws
 
 import (
 	"fmt"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog"
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog"
 )
 
 func LoggerWithRecoverer(logger zerolog.Logger) func(next http.Handler) http.Handler {

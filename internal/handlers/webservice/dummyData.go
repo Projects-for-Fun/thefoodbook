@@ -1,8 +1,9 @@
 package webservice
 
 import (
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (w *Webservice) GetDummyData(rw http.ResponseWriter, r *http.Request) {

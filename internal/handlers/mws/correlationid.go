@@ -2,8 +2,9 @@ package mws
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 var CorrelationIDHeader = "X-Correlation-Id"
