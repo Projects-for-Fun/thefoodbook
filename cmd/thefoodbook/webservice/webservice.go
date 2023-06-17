@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+
 	"github.com/Projects-for-Fun/thefoodbook/configs"
 	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/mws"
 	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice"
@@ -13,7 +15,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func RunWebservice(config *configs.Config, logger zerolog.Logger) error {
+func RunWebservice(config *configs.Config, _ neo4j.DriverWithContext, logger zerolog.Logger) error {
 	log.Println("Running Webservice")
 	_ = webservice.NewWebservice()
 
@@ -25,7 +27,7 @@ func RunWebservice(config *configs.Config, logger zerolog.Logger) error {
 	router.Use(mws.CorrelationID)
 	router.Use(mws.LoggerWithRecoverer(logger))
 
-	router.Get("/status", func(w http.ResponseWriter, r *http.Request) {})
+	router.Get("/status", func(w http.ResponseWriter, r *http.Request) { /* Empty status function. */ })
 
 	return http.ListenAndServe(":"+config.ServicePort, router)
 }

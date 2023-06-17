@@ -16,6 +16,11 @@ type Config struct {
 
 	LogLevel  string
 	LogFormat string
+
+	// Neo4j DB
+	DBURI  string
+	DBUser string
+	DBPass string
 }
 
 func NewConfig() (*Config, error) {
@@ -58,6 +63,24 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 	config.LogFormat = logFormat
+
+	dbURI, err := loadEnvironmentVariable("DB_URI")
+	if err != nil {
+		return nil, err
+	}
+	config.DBURI = dbURI
+
+	dbUser, err := loadEnvironmentVariable("DB_USER")
+	if err != nil {
+		return nil, err
+	}
+	config.DBUser = dbUser
+
+	dbPass, err := loadEnvironmentVariable("DB_PASS")
+	if err != nil {
+		return nil, err
+	}
+	config.DBPass = dbPass
 
 	return &config, nil
 }
