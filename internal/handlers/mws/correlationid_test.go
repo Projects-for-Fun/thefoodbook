@@ -1,28 +1,29 @@
 package mws
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCorrelationIDMiddleware(t *testing.T) {
 	tests := []struct {
 		description            string
-		hasCorrelationIdHeader bool
-		correlationId          string
+		hasCorrelationIDHeader bool
+		correlationID          string
 	}{
 		{
 			description:            "Request without Correlation Id should always create and return one",
-			hasCorrelationIdHeader: false,
-			correlationId:          "", // Not needed
+			hasCorrelationIDHeader: false,
+			correlationID:          "", // Not needed
 		},
 
 		{
 			description:            "Request with Correlation Id should add it to context and return it",
-			hasCorrelationIdHeader: true,
-			correlationId:          "12345",
+			hasCorrelationIDHeader: true,
+			correlationID:          "12345",
 		},
 	}
 
@@ -30,19 +31,19 @@ func TestCorrelationIDMiddleware(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://testing", nil)
 
-			if tt.hasCorrelationIdHeader {
-				req.Header.Set(CorrelationIDHeader, tt.correlationId)
+			if tt.hasCorrelationIDHeader {
+				req.Header.Set(CorrelationIDHeader, tt.correlationID)
 			}
 
 			nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				correlationId := r.Context().Value(RequestIDKey)
+				correlationID := r.Context().Value(RequestIDKey)
 
-				if correlationId == nil {
+				if correlationID == nil {
 					t.Errorf("CorrelationID should never be null.")
 				}
 
-				if tt.hasCorrelationIdHeader {
-					assert.Equal(t, tt.correlationId, r.Header.Get(CorrelationIDHeader), "The correlation ids should match.")
+				if tt.hasCorrelationIDHeader {
+					assert.Equal(t, tt.correlationID, r.Header.Get(CorrelationIDHeader), "The correlation ids should match.")
 
 				}
 			})
