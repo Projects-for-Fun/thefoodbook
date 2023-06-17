@@ -1,7 +1,6 @@
 package mws
 
 import (
-	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -13,7 +12,7 @@ import (
 func LoggerWithRecoverer(logger zerolog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(rw http.ResponseWriter, r *http.Request) {
-			correlationID := fmt.Sprintf("%v", r.Context().Value(RequestIDKey))
+			correlationID := r.Context().Value(RequestIDKey).(string)
 
 			ww := middleware.NewWrapResponseWriter(rw, r.ProtoMajor)
 			t1 := time.Now()

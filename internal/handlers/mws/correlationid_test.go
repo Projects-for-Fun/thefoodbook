@@ -44,7 +44,6 @@ func TestCorrelationIDMiddleware(t *testing.T) {
 
 				if tt.hasCorrelationIDHeader {
 					assert.Equal(t, tt.correlationID, r.Header.Get(CorrelationIDHeader), "The correlation ids should match.")
-
 				}
 			})
 
