@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"log"
 	"os"
+
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 	"github.com/Projects-for-Fun/thefoodbook/cmd/thefoodbook/webservice"
 	"github.com/Projects-for-Fun/thefoodbook/pkg/database"
