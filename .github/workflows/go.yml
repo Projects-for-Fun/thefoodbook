@@ -128,4 +128,4 @@ jobs:
         run: go version
 
       - name: Build
-        run: go build ./cmd
+        run: go build ./cmd/thefoodbook

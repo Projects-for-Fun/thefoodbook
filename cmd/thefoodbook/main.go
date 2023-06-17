@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/Projects-for-Fun/thefoodbook/cmd/thefoodbook/webservice"
 	"log"
 	"os"
 	"time"
 
-	"github.com/Projects-for-Fun/thefoodbook/cmd/webservice"
 	"github.com/Projects-for-Fun/thefoodbook/configs"
 	"github.com/rs/zerolog"
 )
