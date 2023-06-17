@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"log"
 	"os"
 
@@ -13,7 +14,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func initializeDependencies(_ context.Context) (*configs.Config, zerolog.Logger) {
+func initializeDependencies(ctx context.Context) (*configs.Config, neo4j.DriverWithContext, zerolog.Logger) {
 	config, err := configs.NewConfig()
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to set project configuration: %v", err))
@@ -31,20 +32,20 @@ func initializeDependencies(_ context.Context) (*configs.Config, zerolog.Logger)
 	logger.Info().Msgf("Loading variables for %s environment.", config.Environment)
 	logger.Info().Msgf("Running on port %s.", config.ServicePort)
 
-	return config, logger
+	db := database.NewDB(ctx, config.DBURI, config.DBUser, config.DBPass, logger)
+
+	return config, db, logger
 }
 
 func main() {
 	ctxWithCancel, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	config, logger := initializeDependencies(ctxWithCancel)
+	config, db, logger := initializeDependencies(ctxWithCancel)
 
 	if len(os.Args) < 2 {
 		logger.Fatal().Msg("Must provide program argument")
 	}
-
-	db := database.NewDB(ctxWithCancel, config.DBURI, config.DBUser, config.DBPass, logger)
 
 	switch os.Args[1] {
 	case "webservice":
