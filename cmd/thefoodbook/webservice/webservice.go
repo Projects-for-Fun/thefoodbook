@@ -15,7 +15,7 @@ import (
 
 func RunWebservice(config *configs.Config, logger zerolog.Logger) error {
 	log.Println("Running Webservice")
-	w := webservice.NewWebservice()
+	_ = webservice.NewWebservice()
 
 	router := chi.NewRouter()
 
@@ -26,14 +26,6 @@ func RunWebservice(config *configs.Config, logger zerolog.Logger) error {
 	router.Use(mws.LoggerWithRecoverer(logger))
 
 	router.Get("/status", func(w http.ResponseWriter, r *http.Request) {})
-
-	router.Route("/dummy", func(router chi.Router) {
-		router.With(mws.Paginate).Get("/", w.GetDummyData) // GET /dummy or GET /dummy?id=1
-
-		router.Route("/{id}", func(router chi.Router) {
-			router.Get("/", w.GetDummyDataForID) // GET /dummy/1
-		})
-	})
 
 	return http.ListenAndServe(":"+config.ServicePort, router)
 }
