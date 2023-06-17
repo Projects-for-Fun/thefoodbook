@@ -11,7 +11,7 @@ var CorrelationIDHeader = "X-Correlation-Id"
 var RequestIDKey = "CorrelationKey"
 
 func CorrelationID(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		correlationID := r.Header.Get(CorrelationIDHeader)
@@ -20,8 +20,8 @@ func CorrelationID(next http.Handler) http.Handler {
 		}
 
 		ctx = context.WithValue(ctx, RequestIDKey, correlationID)
-		rw.Header().Set(CorrelationIDHeader, correlationID)
+		w.Header().Set(CorrelationIDHeader, correlationID)
 
-		next.ServeHTTP(rw, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
