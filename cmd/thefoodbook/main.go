@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
+
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 	"github.com/Projects-for-Fun/thefoodbook/cmd/thefoodbook/webservice"
+	"github.com/Projects-for-Fun/thefoodbook/pkg/database"
 
 	"github.com/Projects-for-Fun/thefoodbook/configs"
 	"github.com/rs/zerolog"
 )
 
-func initializeDependencies(_ context.Context) (*configs.Config, zerolog.Logger) {
+func initializeDependencies(ctx context.Context) (*configs.Config, neo4j.DriverWithContext, zerolog.Logger) {
 	config, err := configs.NewConfig()
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to set project configuration: %v", err))
@@ -31,14 +33,16 @@ func initializeDependencies(_ context.Context) (*configs.Config, zerolog.Logger)
 	logger.Info().Msgf("Loading variables for %s environment.", config.Environment)
 	logger.Info().Msgf("Running on port %s.", config.ServicePort)
 
-	return config, logger
+	db := database.NewDB(ctx, config.DBURI, config.DBUser, config.DBPass, logger)
+
+	return config, db, logger
 }
 
 func main() {
-	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	ctxWithCancel, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	config, logger := initializeDependencies(ctxWithTimeout)
+	config, db, logger := initializeDependencies(ctxWithCancel)
 
 	if len(os.Args) < 2 {
 		logger.Fatal().Msg("Must provide program argument")
@@ -46,10 +50,11 @@ func main() {
 
 	switch os.Args[1] {
 	case "webservice":
-		err := webservice.RunWebservice(config, logger)
+		err := webservice.RunWebservice(config, db, logger)
 
 		if err != nil {
-			logger.Err(err).Msg("Webservice stopped")
+			logger.Fatal().Err(err).Msg("Webservice stopped")
+			database.CloseDriver(ctxWithCancel, db, logger)
 		}
 	default:
 		logger.Error().Msg("Mistakes were made")
