@@ -1,6 +1,7 @@
 package mws
 
 import (
+	"context"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -9,15 +10,18 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var LoggerKey = "LoggerKey"
+
 func LoggerWithRecoverer(logger zerolog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		fn := func(rw http.ResponseWriter, r *http.Request) {
+		fn := func(w http.ResponseWriter, r *http.Request) {
 			correlationID := r.Context().Value(RequestIDKey).(string)
 
-			ww := middleware.NewWrapResponseWriter(rw, r.ProtoMajor)
-			t1 := time.Now()
+			log := logger.With().Str("correlation-id", correlationID).Caller().Logger()
+			ctx := context.WithValue(r.Context(), LoggerKey, log)
 
-			log := logger.With().Str("correlation-id", correlationID).Logger()
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			t1 := time.Now()
 
 			defer func() {
 				t2 := time.Now()
@@ -37,14 +41,17 @@ func LoggerWithRecoverer(logger zerolog.Logger) func(next http.Handler) http.Han
 				if rvr := recover(); rvr != nil {
 					logger.Error().Interface("recover_info", rvr).Bytes("debug_stack", debug.Stack()).Msg("Panic on request")
 
-					http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				}
-
 			}()
 
-			next.ServeHTTP(rw, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 
 		return http.HandlerFunc(fn)
 	}
+}
+
+func GetLogger(ctx context.Context) zerolog.Logger {
+	return ctx.Value(LoggerKey).(zerolog.Logger)
 }
