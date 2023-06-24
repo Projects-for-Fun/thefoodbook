@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/mws"
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
@@ -40,7 +40,7 @@ func (w *Webservice) HandleSignUp(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get logger from context
-	userID, err := w.CreateUser(r.Context(), mws.GetLogger(r.Context()), domain.User(user))
+	userID, err := w.CreateUser(r.Context(), logging.GetLogger(r.Context()), domain.User(user))
 	if err != nil {
 		MapErrorResponse(rw, r, err)
 		return

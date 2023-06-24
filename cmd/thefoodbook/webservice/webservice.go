@@ -18,18 +18,20 @@ import (
 )
 
 func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
-	logger.Info().Msg("Running Webservice")
+	logger.Info().Msg("Initializing webservice.")
 	w := webservice.NewWebservice(service.HandleCreateUserFunc(repository.CreateUserRepoFunc(db)))
 
 	router := chi.NewRouter()
 
 	router.Use(middleware.Timeout(50 * time.Second))
-	router.Use(mws.CorrelationID)
-	router.Use(mws.LoggerWithRecoverer(logger))
+	router.Use(mws.CorrelationIDMiddleware)
+	router.Use(mws.LoggerMiddleware(logger))
+	router.Use(mws.Recoverer)
 
 	router.Get("/status", func(w http.ResponseWriter, r *http.Request) { /* Empty status function. */ })
 
 	router.Post("/sign-up", w.HandleSignUp)
 
+	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
 	return http.ListenAndServe(":"+config.ServicePort, router)
 }

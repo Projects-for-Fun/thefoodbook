@@ -3,14 +3,15 @@ package webservice
 import (
 	"net/http"
 
-	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/mws"
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
 
 func MapErrorResponse(rw http.ResponseWriter, r *http.Request, err error) {
-	logger := mws.GetLogger(r.Context())
+	logger := logging.GetLogger(r.Context())
 
 	wrappedErrors, isWrapped := err.(interface{ Unwrap() []error })
 
@@ -19,7 +20,7 @@ func MapErrorResponse(rw http.ResponseWriter, r *http.Request, err error) {
 
 		for _, err := range wrappedErrors.Unwrap() {
 			errs = append(errs, err)
-			logger.Error().Err(err).Msg(err.Error())
+			logger.Info().AnErr("error", err).Msg(err.Error())
 		}
 
 		header(rw, errs[0])
