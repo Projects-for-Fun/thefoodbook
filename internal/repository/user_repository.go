@@ -30,17 +30,6 @@ func CreateUserRepoFunc(db neo4j.DriverWithContext) adapter.CreateUserRepo {
 								createdAt: datetime()
 							})
 					   RETURN u.id`
-			//			`CREATE (u:User {id: randomUUID()})
-			//			 SET
-			//					u.usernam = $username,
-			//					u.firstName = $firstName,
-			//					u.lastName = $lastName,
-			//					u.email = $email,
-			//					u.password = $password,
-			//					u.createdAt = datetime()
-			//
-			//		     RETURN u.id
-			//`
 			params := map[string]any{
 				"username":  user.Username,
 				"firstName": user.FirstName,

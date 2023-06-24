@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
-
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
 
@@ -30,30 +28,17 @@ func (w *Webservice) HandleSignUp(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 		encryptedPassword, err := encryptPassword(plainPassword, as.saltRounds)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	user.Password, err = encryptPassword(user.Password, 10)
+	user.Password, err = encryptPassword(user.Password)
 	if err != nil {
 		MapErrorResponse(rw, r, err)
 	}
 
 	// Get logger from context
-	userID, err := w.CreateUser(r.Context(), logging.GetLogger(r.Context()), domain.User(user))
+	_, err = w.CreateUser(r.Context(), domain.User(user))
 	if err != nil {
 		MapErrorResponse(rw, r, err)
 		return
 	}
 
-	rw.Header().Set("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-
-	userIDString := *userID
-	_, err = rw.Write([]byte(userIDString.String()))
-	if err != nil {
-		MapErrorResponse(rw, r, err)
-		return
-	}
-
+	rw.WriteHeader(http.StatusCreated)
 }

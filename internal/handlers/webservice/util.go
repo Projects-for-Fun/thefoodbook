@@ -40,9 +40,8 @@ func header(rw http.ResponseWriter, err error) {
 	http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 }
 
-// nolint
-func encryptPassword(password string, cost int) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), cost)
+func encryptPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
 		return "", err
 	}
