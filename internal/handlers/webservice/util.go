@@ -5,8 +5,6 @@ import (
 
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
 
@@ -37,13 +35,10 @@ func header(rw http.ResponseWriter, err error) {
 		return
 	}
 
-	http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
-}
-
-func encryptPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return "", err
+	if err == domain.ErrInvalidUsernameOrPassword {
+		http.Error(rw, err.Error(), http.StatusUnauthorized)
+		return
 	}
-	return string(hash), nil
+
+	http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 }

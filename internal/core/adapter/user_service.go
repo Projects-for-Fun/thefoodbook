@@ -9,3 +9,5 @@ import (
 )
 
 type CreateUser func(ctx context.Context, user domain.User) (*uuid.UUID, error)
+
+type LoginUser func(ctx context.Context, username, password string) (*domain.User, error)
