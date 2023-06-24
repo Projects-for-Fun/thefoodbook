@@ -1,9 +1,11 @@
 package webservice
 
 import (
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/Projects-for-Fun/thefoodbook/internal/repository"
+	"github.com/Projects-for-Fun/thefoodbook/internal/service"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
@@ -15,19 +17,21 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func RunWebservice(config *configs.Config, _ neo4j.DriverWithContext, logger zerolog.Logger) error {
-	log.Println("Running Webservice")
-	_ = webservice.NewWebservice()
+func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
+	logger.Info().Msg("Initializing webservice.")
+	w := webservice.NewWebservice(service.HandleCreateUserFunc(repository.CreateUserRepoFunc(db)))
 
 	router := chi.NewRouter()
 
-	middleware.RequestIDHeader = "X-Correlation-Id"
-
-	router.Use(middleware.Timeout(5 * time.Second))
-	router.Use(mws.CorrelationID)
-	router.Use(mws.LoggerWithRecoverer(logger))
+	router.Use(middleware.Timeout(50 * time.Second))
+	router.Use(mws.CorrelationIDMiddleware)
+	router.Use(mws.LoggerMiddleware(logger))
+	router.Use(mws.Recoverer)
 
 	router.Get("/status", func(w http.ResponseWriter, r *http.Request) { /* Empty status function. */ })
 
+	router.Post("/sign-up", w.HandleSignUp)
+
+	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
 	return http.ListenAndServe(":"+config.ServicePort, router)
 }

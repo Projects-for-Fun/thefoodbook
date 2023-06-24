@@ -1,4 +1,4 @@
-unit-tests:
+test:
 	go test -v ./...
 
 lint:

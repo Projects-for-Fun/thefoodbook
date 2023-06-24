@@ -27,11 +27,10 @@ func initializeDependencies(ctx context.Context) (*configs.Config, neo4j.DriverW
 	// https://github.com/rs/zerolog#integration-with-nethttp
 	var logger zerolog.Logger
 	if config.LogFormat == "console" {
-		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, NoColor: false}).With().Timestamp().Logger()
+		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, NoColor: false}).With().Caller().Timestamp().Logger()
 	}
 
 	logger.Info().Msgf("Loading variables for %s environment.", config.Environment)
-	logger.Info().Msgf("Running on port %s.", config.ServicePort)
 
 	db := database.NewDB(ctx, config.DBURI, config.DBUser, config.DBPass, logger)
 

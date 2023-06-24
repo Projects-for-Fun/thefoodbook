@@ -1,15 +1,15 @@
 package webservice
 
+import (
+	"github.com/Projects-for-Fun/thefoodbook/internal/core/adapter"
+)
+
 type Webservice struct {
-	//
-
-	// handlers for requests
+	CreateUser adapter.CreateUser
 }
 
-type Adapters struct {
-	// handlers for requests
-}
-
-func NewWebservice() *Webservice {
-	return &Webservice{}
+func NewWebservice(createUser adapter.CreateUser) *Webservice {
+	return &Webservice{
+		CreateUser: createUser,
+	}
 }

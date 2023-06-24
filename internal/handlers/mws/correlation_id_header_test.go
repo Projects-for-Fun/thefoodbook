@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/tracing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,10 +38,10 @@ func TestCorrelationIDMiddleware(t *testing.T) {
 			}
 
 			nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				correlationID := r.Context().Value(RequestIDKey)
+				correlationID := r.Context().Value(tracing.CorrelationIDKey)
 
 				if correlationID == nil {
-					t.Errorf("CorrelationID should never be null.")
+					t.Errorf("CorrelationIDMiddleware should never be null.")
 				}
 
 				if tt.hasCorrelationIDHeader {
@@ -47,7 +49,7 @@ func TestCorrelationIDMiddleware(t *testing.T) {
 				}
 			})
 
-			middlewareToTest := CorrelationID(nextHandler)
+			middlewareToTest := CorrelationIDMiddleware(nextHandler)
 			middlewareToTest.ServeHTTP(httptest.NewRecorder(), req)
 		})
 	}
