@@ -21,7 +21,7 @@ func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger ze
 	logger.Info().Msg("Initializing webservice.")
 	w := webservice.NewWebservice(
 		service.HandleCreateUserFunc(repository.CreateUserRepoFunc(db)),
-		service.HandleLoginUserFunc(repository.LoginUserRepoFunc(db), repository.SetLoginUserRepo(db)),
+		service.HandleLoginUserFunc(repository.ValidateLoginUserRepoFunc(db), repository.SetLoginUserRepo(db)),
 		service.HandleCreateTokenFunc(config.JWTKey),
 	)
 

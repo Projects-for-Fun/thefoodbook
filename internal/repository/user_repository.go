@@ -62,7 +62,7 @@ func CreateUserRepoFunc(db neo4j.DriverWithContext) adapter.CreateUserRepo {
 	}
 }
 
-func LoginUserRepoFunc(db neo4j.DriverWithContext) adapter.ValidateLoginUserRepo {
+func ValidateLoginUserRepoFunc(db neo4j.DriverWithContext) adapter.ValidateLoginUserRepo {
 	return func(ctx context.Context, username string) (loggedUser *domain.User, err error) {
 		session := db.NewSession(ctx, neo4j.SessionConfig{})
 
