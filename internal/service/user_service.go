@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 
-	"github.com/Projects-for-Fun/thefoodbook/pkg/auth"
-
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
 
 	"github.com/google/uuid"
@@ -30,11 +28,13 @@ func HandleCreateUserFunc(create adapter.CreateUserRepo) adapter.CreateUser {
 	}
 }
 
-func HandleLoginUserFunc(login adapter.ValidateLoginUserRepo, setUserLogin adapter.SetLoginUserRepo) adapter.LoginUser {
+func HandleLoginUserFunc(validateLogin adapter.ValidateLoginUserRepo,
+	verifyPassword func(password, hash string) bool,
+	setUserLastLogin adapter.SetUserLastLoginRepo) adapter.LoginUser {
 	return func(ctx context.Context, username, password string) (*domain.User, error) {
 		logger := logging.GetLogger(ctx)
 
-		userLogged, err := login(ctx, username)
+		userLogged, err := validateLogin(ctx, username)
 
 		if err != nil {
 			logger.Info().
@@ -44,14 +44,17 @@ func HandleLoginUserFunc(login adapter.ValidateLoginUserRepo, setUserLogin adapt
 			return nil, err
 		}
 
-		if !auth.VerifyPassword(password, userLogged.Password) {
+		if !verifyPassword(password, userLogged.Password) {
 			logger.Info().
 				Str("username", username).
 				Msg("Couldn't log user - invalid username or password")
 			return nil, domain.ErrInvalidUsernameOrPassword
 		}
 
-		err = setUserLogin(ctx, username)
+		err = setUserLastLogin(ctx, username)
+		if err != nil {
+			return nil, err
+		}
 
 		return userLogged, err
 	}

@@ -9,6 +9,7 @@ import (
 )
 
 type CreateUserRepo func(ctx context.Context, user domain.User) (*uuid.UUID, error)
+
 type ValidateLoginUserRepo func(ctx context.Context, username string) (*domain.User, error)
 
-type SetLoginUserRepo func(ctx context.Context, username string) error
+type SetUserLastLoginRepo func(ctx context.Context, username string) error

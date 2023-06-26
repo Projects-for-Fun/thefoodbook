@@ -108,15 +108,15 @@ func ValidateLoginUserRepoFunc(db neo4j.DriverWithContext) adapter.ValidateLogin
 			FirstName: userProps["firstName"].(string),
 			LastName:  userProps["lastName"].(string),
 			Email:     userProps["email"].(string),
-			Password:  userProps["password"].(string),     // encrypted
-			CreatedAt: userProps["createdAt"].(time.Time), // encrypted
+			Password:  userProps["password"].(string), // encrypted
+			CreatedAt: userProps["createdAt"].(time.Time),
 		}
 
 		return &userLogged, nil
 	}
 }
 
-func SetLoginUserRepo(db neo4j.DriverWithContext) adapter.SetLoginUserRepo {
+func SetUserLastLoginRepo(db neo4j.DriverWithContext) adapter.SetUserLastLoginRepo {
 	return func(ctx context.Context, username string) (err error) {
 		session := db.NewSession(ctx, neo4j.SessionConfig{})
 
