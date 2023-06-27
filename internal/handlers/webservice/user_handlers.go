@@ -93,11 +93,10 @@ func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
 func (w *Webservice) HandleRefresh(jwtKey []byte) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		logger := logging.GetLogger(r.Context())
-		token := auth.GetToken(r.Context())
 
-		claims, ok := token.Claims.(*domain.Claims)
-		if !ok && !token.Valid {
-			logger.Info().Msg("Unauthorized user")
+		claims, err := auth.GetClaims(r.Context())
+		if err != nil {
+			logger.Info().AnErr("error", err).Msg("Unauthorized user")
 			rw.WriteHeader(http.StatusUnauthorized)
 		}
 
@@ -123,15 +122,15 @@ func (w *Webservice) HandleRefresh(jwtKey []byte) http.HandlerFunc {
 
 func (w *Webservice) HandleWelcome(rw http.ResponseWriter, r *http.Request) {
 	logger := logging.GetLogger(r.Context())
-	token := auth.GetToken(r.Context())
 
-	if claims, ok := token.Claims.(*domain.Claims); ok && token.Valid {
-		_, err := rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
-		if err != nil {
-			logger.Error().Err(err).Msg("Unexpected error")
-		}
-	} else {
-		logger.Info().Msg("Unauthorized user")
+	claims, err := auth.GetClaims(r.Context())
+	if err != nil {
+		logger.Info().AnErr("error", err).Msg("Unauthorized user")
 		rw.WriteHeader(http.StatusUnauthorized)
+	}
+
+	_, err = rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
+	if err != nil {
+		logger.Error().Err(err).Msg("Unexpected error")
 	}
 }

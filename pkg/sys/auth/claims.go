@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -21,4 +22,20 @@ func GetToken(ctx context.Context) *jwt.Token {
 	}
 
 	return tknStr
+}
+
+func GetClaims(ctx context.Context) (*domain.Claims, error) {
+	token := GetToken(ctx)
+
+	if token == nil {
+		return nil, domain.ErrUnauthorized
+	}
+
+	claims, ok := token.Claims.(*domain.Claims)
+
+	if ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, domain.ErrUnauthorized
 }
