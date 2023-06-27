@@ -6,11 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
+
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
-
-	"github.com/golang-jwt/jwt/v5"
-
-	"github.com/Projects-for-Fun/thefoodbook/pkg/auth"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
@@ -90,44 +88,17 @@ func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
 	})
 }
 
-func (w *Webservice) HandleWelcome(jwtKey []byte) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		logger := logging.GetLogger(r.Context())
+func (w *Webservice) HandleWelcome(rw http.ResponseWriter, r *http.Request) {
+	logger := logging.GetLogger(r.Context())
+	token := auth.GetToken(r.Context())
 
-		c, err := r.Cookie("token")
-		if err != nil {
-			if err == http.ErrNoCookie {
-				// If the cookie is not set, return an unauthorized status
-				rw.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			// For any other type of error, return a bad request status
-			rw.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		tknStr := c.Value
-		claims := &domain.Claims{}
-
-		tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-		if err != nil {
-			if err == jwt.ErrSignatureInvalid {
-				rw.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			rw.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if !tkn.Valid {
-			rw.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		_, err = rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
+	if claims, ok := token.Claims.(*domain.Claims); ok && token.Valid {
+		_, err := rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
 		if err != nil {
 			logger.Error().Err(err).Msg("Unexpected error")
 		}
+	} else {
+		logger.Info().Msg("Unauthorized user")
+		rw.WriteHeader(http.StatusUnauthorized)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Projects-for-Fun/thefoodbook/pkg/auth"
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/repository"
 	"github.com/Projects-for-Fun/thefoodbook/internal/service"
@@ -39,7 +39,10 @@ func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger ze
 	router.Post("/sign-up", w.HandleSignUp)
 	router.Post("/login", w.HandleLogin)
 	router.Post("/logout", w.HandleLogout)
-	router.Post("/welcome", w.HandleWelcome(config.JWTKey))
+	router.Route("/welcome", func(router chi.Router) {
+		router.Use(mws.AuthMiddleware(config.JWTKey))
+		router.Get("/", w.HandleWelcome)
+	})
 
 	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
 	return http.ListenAndServe(":"+config.ServicePort, router)
