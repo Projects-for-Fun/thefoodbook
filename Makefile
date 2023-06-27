@@ -1,5 +1,5 @@
-test:
-	go test -v ./...
+tests:
+	go test -count=1 -v ./...
 
 lint:
 	$(eval OUTPUT_OPTIONS = $(shell [ "${EXPORT_RESULT}" == "true" ] && echo "--out-format checkstyle ./... | tee /dev/tty > checkstyle-report.xml" || echo "" ))

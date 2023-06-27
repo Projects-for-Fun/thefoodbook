@@ -21,6 +21,8 @@ type Config struct {
 	DBURI  string
 	DBUser string
 	DBPass string
+
+	JWTKey []byte
 }
 
 func NewConfig() (*Config, error) {
@@ -81,6 +83,12 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 	config.DBPass = dbPass
+
+	jwtKey, err := loadEnvironmentVariable("JWT_KEY")
+	if err != nil {
+		return nil, err
+	}
+	config.JWTKey = []byte(jwtKey)
 
 	return &config, nil
 }
