@@ -54,31 +54,33 @@ func (w *Webservice) HandleSignUp(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 }
 
-func (w *Webservice) HandleLogin(rw http.ResponseWriter, r *http.Request) {
-	username, password, ok := r.BasicAuth()
+func (w *Webservice) HandleLogin(jwtKey []byte) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
 
-	if !ok {
-		rw.WriteHeader(http.StatusBadRequest)
-		return
+		if !ok {
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		user, err := w.LoginUser(r.Context(), username, password)
+		if err != nil {
+			MapErrorResponse(rw, r, err)
+			return
+		}
+
+		expirationTime, tokenString, err := auth.CreateTokenForUser(*user, jwtKey)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(rw, &http.Cookie{
+			Name:    "token",
+			Value:   tokenString,
+			Expires: expirationTime,
+		})
 	}
-
-	user, err := w.LoginUser(r.Context(), username, password)
-	if err != nil {
-		MapErrorResponse(rw, r, err)
-		return
-	}
-
-	expirationTime, tokenString, err := w.CreateToken(r.Context(), *user)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	http.SetCookie(rw, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
-	})
 }
 
 func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
@@ -86,6 +88,37 @@ func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
 		Name:    "token",
 		Expires: time.Now(),
 	})
+}
+
+func (w *Webservice) HandleRefresh(jwtKey []byte) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		logger := logging.GetLogger(r.Context())
+		token := auth.GetToken(r.Context())
+
+		claims, ok := token.Claims.(*domain.Claims)
+		if !ok && !token.Valid {
+			logger.Info().Msg("Unauthorized user")
+			rw.WriteHeader(http.StatusUnauthorized)
+		}
+
+		if time.Until(claims.ExpiresAt.Time) > 30*time.Second {
+			logger.Info().Msg("Token expired")
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		expirationTime, tokenString, err := auth.CreateTokenFromExistingClaims(claims, jwtKey)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(rw, &http.Cookie{
+			Name:    "token",
+			Value:   tokenString,
+			Expires: expirationTime,
+		})
+	}
 }
 
 func (w *Webservice) HandleWelcome(rw http.ResponseWriter, r *http.Request) {

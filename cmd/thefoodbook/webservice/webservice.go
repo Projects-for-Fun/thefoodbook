@@ -37,11 +37,12 @@ func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger ze
 	router.Get("/status", func(w http.ResponseWriter, r *http.Request) { /* Empty status function. */ })
 
 	router.Post("/sign-up", w.HandleSignUp)
-	router.Post("/login", w.HandleLogin)
+	router.Post("/login", w.HandleLogin(config.JWTKey))
 	router.Post("/logout", w.HandleLogout)
-	router.Route("/welcome", func(router chi.Router) {
+	router.Route("/auth", func(router chi.Router) {
 		router.Use(mws.AuthMiddleware(config.JWTKey))
-		router.Get("/", w.HandleWelcome)
+		router.Get("/welcome", w.HandleWelcome)
+		router.Post("/refresh", w.HandleRefresh(config.JWTKey))
 	})
 
 	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
