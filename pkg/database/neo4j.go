@@ -2,13 +2,14 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/zerolog"
 )
 
 func NewDB(ctx context.Context, DBURI, DBUser, DBPass string, logger zerolog.Logger) neo4j.DriverWithContext {
-	driver, err := newDriver(ctx, DBURI, DBUser, DBPass)
+	driver, err := newDriver(ctx, DBURI, DBUser, DBPass, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Caller().Msg("Couldn't connect to the db.")
@@ -18,7 +19,7 @@ func NewDB(ctx context.Context, DBURI, DBUser, DBPass string, logger zerolog.Log
 	return driver
 }
 
-func newDriver(ctx context.Context, uri, username, password string) (neo4j.DriverWithContext, error) {
+func newDriver(ctx context.Context, uri, username, password string, logger zerolog.Logger) (neo4j.DriverWithContext, error) {
 	// Create Driver
 	driverWithContext, err := neo4j.NewDriverWithContext(uri, neo4j.BasicAuth(username, password, ""))
 
@@ -28,7 +29,15 @@ func newDriver(ctx context.Context, uri, username, password string) (neo4j.Drive
 	}
 
 	// Verify Connectivity
-	err = driverWithContext.VerifyConnectivity(ctx)
+	for i := 1; i < 5; i++ {
+		err = driverWithContext.VerifyConnectivity(ctx)
+		if err != nil {
+			logger.Warn().Err(err).Msg("DB is not ready. Sleeping for 5 seconds")
+			time.Sleep(5 * time.Second)
+		} else {
+			break
+		}
+	}
 
 	// If connectivity fails, handle the error
 	if err != nil {

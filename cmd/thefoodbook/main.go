@@ -21,10 +21,6 @@ func initializeDependencies(ctx context.Context) (*configs.Config, neo4j.DriverW
 		log.Fatal(fmt.Errorf("failed to set project configuration: %v", err))
 	}
 
-	// TODO: update this
-	// https://github.com/rs/zerolog#pass-a-sub-logger-by-context
-	// https://github.com/rs/zerolog#contextcontext-integration
-	// https://github.com/rs/zerolog#integration-with-nethttp
 	var logger zerolog.Logger
 	if config.LogFormat == "console" {
 		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, NoColor: false}).With().Caller().Timestamp().Logger()
