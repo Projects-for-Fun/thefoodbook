@@ -6,11 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
-
-	"github.com/golang-jwt/jwt/v5"
-
-	"github.com/Projects-for-Fun/thefoodbook/pkg/auth"
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
@@ -56,31 +52,33 @@ func (w *Webservice) HandleSignUp(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 }
 
-func (w *Webservice) HandleLogin(rw http.ResponseWriter, r *http.Request) {
-	username, password, ok := r.BasicAuth()
+func (w *Webservice) HandleLogin(jwtKey []byte) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
 
-	if !ok {
-		rw.WriteHeader(http.StatusBadRequest)
-		return
+		if !ok {
+			MapErrorResponse(rw, r, domain.ErrBadRequest, "Authorization header missing")
+			return
+		}
+
+		user, err := w.LoginUser(r.Context(), username, password)
+		if err != nil {
+			MapErrorResponse(rw, r, err)
+			return
+		}
+
+		expirationTime, tokenString, err := auth.CreateTokenForUser(*user, jwtKey)
+		if err != nil {
+			MapErrorResponse(rw, r, err)
+			return
+		}
+
+		http.SetCookie(rw, &http.Cookie{
+			Name:    "token",
+			Value:   tokenString,
+			Expires: expirationTime,
+		})
 	}
-
-	user, err := w.LoginUser(r.Context(), username, password)
-	if err != nil {
-		MapErrorResponse(rw, r, err)
-		return
-	}
-
-	expirationTime, tokenString, err := w.CreateToken(r.Context(), *user)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	http.SetCookie(rw, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
-	})
 }
 
 func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
@@ -90,44 +88,41 @@ func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
 	})
 }
 
-func (w *Webservice) HandleWelcome(jwtKey []byte) http.HandlerFunc {
+func (w *Webservice) HandleRefresh(jwtKey []byte) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		logger := logging.GetLogger(r.Context())
-
-		c, err := r.Cookie("token")
+		claims, err := auth.GetClaims(r.Context())
 		if err != nil {
-			if err == http.ErrNoCookie {
-				// If the cookie is not set, return an unauthorized status
-				rw.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			// For any other type of error, return a bad request status
-			rw.WriteHeader(http.StatusBadRequest)
+			MapErrorResponse(rw, r, domain.ErrUnauthorized)
 			return
 		}
 
-		tknStr := c.Value
-		claims := &domain.Claims{}
+		if time.Until(claims.ExpiresAt.Time) > 30*time.Second {
+			MapErrorResponse(rw, r, domain.ErrBadRequest, "Token expired")
+			return
+		}
 
-		tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+		expirationTime, tokenString, err := auth.CreateTokenFromExistingClaims(claims, jwtKey)
+		if err != nil {
+			MapErrorResponse(rw, r, err)
+			return
+		}
+
+		http.SetCookie(rw, &http.Cookie{
+			Name:    "token",
+			Value:   tokenString,
+			Expires: expirationTime,
 		})
-		if err != nil {
-			if err == jwt.ErrSignatureInvalid {
-				rw.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			rw.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if !tkn.Valid {
-			rw.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+	}
+}
 
-		_, err = rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
-		if err != nil {
-			logger.Error().Err(err).Msg("Unexpected error")
-		}
+func (w *Webservice) HandleWelcome(rw http.ResponseWriter, r *http.Request) {
+	claims, err := auth.GetClaims(r.Context())
+	if err != nil {
+		MapErrorResponse(rw, r, err)
+	}
+
+	_, err = rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
+	if err != nil {
+		MapErrorResponse(rw, r, err)
 	}
 }

@@ -5,19 +5,16 @@ import (
 )
 
 type Webservice struct {
-	CreateUser  adapter.CreateUser
-	LoginUser   adapter.LoginUser
-	CreateToken adapter.CreateToken
+	CreateUser adapter.CreateUserService
+	LoginUser  adapter.LoginUserService
 }
 
 func NewWebservice(
-	createUser adapter.CreateUser,
-	loginUser adapter.LoginUser,
-	createToken adapter.CreateToken,
+	createUser adapter.CreateUserService,
+	loginUser adapter.LoginUserService,
 ) *Webservice {
 	return &Webservice{
-		CreateUser:  createUser,
-		LoginUser:   loginUser,
-		CreateToken: createToken,
+		CreateUser: createUser,
+		LoginUser:  loginUser,
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
 
-func HandleCreateUserFunc(create adapter.CreateUserRepo) adapter.CreateUser {
+func CreateUserServiceFunc(create adapter.CreateUserRepo) adapter.CreateUserService {
 	return func(ctx context.Context, user domain.User) (*uuid.UUID, error) {
 		logger := logging.GetLogger(ctx)
 
@@ -28,13 +28,13 @@ func HandleCreateUserFunc(create adapter.CreateUserRepo) adapter.CreateUser {
 	}
 }
 
-func HandleLoginUserFunc(validateLogin adapter.ValidateLoginUserRepo,
+func LoginUserServiceFunc(getUserByUsername adapter.GetUserByUsernameRepo,
 	verifyPassword func(password, hash string) bool,
-	setUserLastLogin adapter.SetUserLastLoginRepo) adapter.LoginUser {
+	setUserLastLogin adapter.SetUserLastLoginRepo) adapter.LoginUserService {
 	return func(ctx context.Context, username, password string) (*domain.User, error) {
 		logger := logging.GetLogger(ctx)
 
-		userLogged, err := validateLogin(ctx, username)
+		userLogged, err := getUserByUsername(ctx, username)
 
 		if err != nil {
 			logger.Info().

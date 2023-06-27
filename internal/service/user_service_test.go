@@ -28,8 +28,7 @@ func TestHandleCreateUser(t *testing.T) {
 		{
 			description: "Should error when creating a new user",
 			w: *webservice.NewWebservice(
-				HandleCreateUserFunc(createNewUserRepoMock(nil, fmt.Errorf("error"))),
-				nil,
+				CreateUserServiceFunc(createNewUserRepoMock(nil, fmt.Errorf("error"))),
 				nil,
 			),
 			expectedUserID: nil,
@@ -38,8 +37,7 @@ func TestHandleCreateUser(t *testing.T) {
 		{
 			description: "Should create a new user",
 			w: *webservice.NewWebservice(
-				HandleCreateUserFunc(createNewUserRepoMock(&uuid.Nil, nil)),
-				nil,
+				CreateUserServiceFunc(createNewUserRepoMock(&uuid.Nil, nil)),
 				nil,
 			),
 			expectedUserID: &uuid.Nil,
@@ -57,7 +55,7 @@ func TestHandleCreateUser(t *testing.T) {
 	}
 }
 
-func validateLoginUserRepoMock(user *domain.User, err error) adapter.ValidateLoginUserRepo {
+func getUserByUsernameRepoFuncMock(user *domain.User, err error) adapter.GetUserByUsernameRepo {
 	return func(ctx context.Context, username string) (*domain.User, error) {
 		return user, err
 	}
@@ -80,40 +78,36 @@ func TestHandleLoginUserFunc(t *testing.T) {
 		{
 			description: "Should fail the validation",
 			w: *webservice.NewWebservice(nil,
-				HandleLoginUserFunc(validateLoginUserRepoMock(nil, fmt.Errorf("error")),
+				LoginUserServiceFunc(getUserByUsernameRepoFuncMock(nil, fmt.Errorf("error")),
 					func(password, hash string) bool { return false },
-					setUserLastLoginRepoMock(nil)),
-				nil),
+					setUserLastLoginRepoMock(nil))),
 			expectedUser: nil,
 			expectedErr:  fmt.Errorf("error"),
 		},
 		{
 			description: "Should fail when verifying the password",
 			w: *webservice.NewWebservice(nil,
-				HandleLoginUserFunc(validateLoginUserRepoMock(&domain.User{}, nil),
+				LoginUserServiceFunc(getUserByUsernameRepoFuncMock(&domain.User{}, nil),
 					func(password, hash string) bool { return false },
-					setUserLastLoginRepoMock(fmt.Errorf("error"))),
-				nil),
+					setUserLastLoginRepoMock(fmt.Errorf("error")))),
 			expectedUser: nil,
 			expectedErr:  domain.ErrInvalidUsernameOrPassword,
 		},
 		{
 			description: "Should fail when set user as logged in",
 			w: *webservice.NewWebservice(nil,
-				HandleLoginUserFunc(validateLoginUserRepoMock(&domain.User{}, nil),
+				LoginUserServiceFunc(getUserByUsernameRepoFuncMock(&domain.User{}, nil),
 					func(password, hash string) bool { return true },
-					setUserLastLoginRepoMock(fmt.Errorf("error"))),
-				nil),
+					setUserLastLoginRepoMock(fmt.Errorf("error")))),
 			expectedUser: nil,
 			expectedErr:  fmt.Errorf("error"),
 		},
 		{
 			description: "Should succeed login the user",
 			w: *webservice.NewWebservice(nil,
-				HandleLoginUserFunc(validateLoginUserRepoMock(&domain.User{}, nil),
+				LoginUserServiceFunc(getUserByUsernameRepoFuncMock(&domain.User{}, nil),
 					func(password, hash string) bool { return true },
-					setUserLastLoginRepoMock(nil)),
-				nil),
+					setUserLastLoginRepoMock(nil))),
 			expectedUser: &domain.User{},
 			expectedErr:  nil,
 		},
