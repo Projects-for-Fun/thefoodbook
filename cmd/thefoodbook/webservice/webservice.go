@@ -24,7 +24,6 @@ func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger ze
 	w := webservice.NewWebservice(
 		service.HandleCreateUserFunc(repository.CreateUserRepoFunc(db)),
 		service.HandleLoginUserFunc(repository.ValidateLoginUserRepoFunc(db), auth.VerifyPassword, repository.SetUserLastLoginRepo(db)),
-		service.HandleCreateTokenFunc(config.JWTKey),
 	)
 
 	router := chi.NewRouter()
