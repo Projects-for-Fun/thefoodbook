@@ -3,6 +3,8 @@ package mws
 import (
 	"net/http"
 
+	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice"
+
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
@@ -12,13 +14,12 @@ import (
 
 func AuthMiddleware(jwtKey []byte) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
+		fn := func(rw http.ResponseWriter, r *http.Request) {
 			logger := logging.GetLogger(r.Context())
 
 			c, err := r.Cookie("token")
 			if err != nil {
-				logger.Info().AnErr("error", err).Msg("Unauthorized user. Cookie not set.")
-				w.WriteHeader(http.StatusUnauthorized)
+				webservice.MapErrorResponse(rw, r, domain.ErrUnauthorized, "Unauthorized user. Cookie not set.")
 				return
 			}
 
@@ -27,24 +28,21 @@ func AuthMiddleware(jwtKey []byte) func(next http.Handler) http.Handler {
 			})
 			if err != nil {
 				if err == jwt.ErrSignatureInvalid {
-					logger.Info().AnErr("error", err).Msg("Unauthorized user. Invalid signature.")
-					w.WriteHeader(http.StatusUnauthorized)
+					webservice.MapErrorResponse(rw, r, domain.ErrUnauthorized, "Unauthorized user. Invalid signature.")
 					return
 				}
 
-				logger.Info().AnErr("error", err).Msg("Bad request.")
-				w.WriteHeader(http.StatusBadRequest)
+				webservice.MapErrorResponse(rw, r, domain.ErrBadRequest, "Unauthorized user. Bad request.")
 				return
 			}
 
 			if !tkn.Valid {
-				logger.Info().AnErr("error", err).Msg("Unauthorized user. Token is not valid.")
-				w.WriteHeader(http.StatusUnauthorized)
+				webservice.MapErrorResponse(rw, r, domain.ErrBadRequest, "Unauthorized user. Token is not valid.")
 				return
 			}
 
 			logger.Info().Msg("User logged in")
-			next.ServeHTTP(w, r.WithContext(auth.AttachToken(r.Context(), tkn)))
+			next.ServeHTTP(rw, r.WithContext(auth.AttachToken(r.Context(), tkn)))
 		}
 
 		return http.HandlerFunc(fn)
