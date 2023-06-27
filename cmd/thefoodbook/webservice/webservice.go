@@ -22,8 +22,8 @@ import (
 func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
 	logger.Info().Msg("Initializing webservice.")
 	w := webservice.NewWebservice(
-		service.HandleCreateUserFunc(repository.CreateUserRepoFunc(db)),
-		service.HandleLoginUserFunc(repository.ValidateLoginUserRepoFunc(db), auth.VerifyPassword, repository.SetUserLastLoginRepo(db)),
+		service.CreateUserServiceFunc(repository.CreateUserRepoFunc(db)),
+		service.LoginUserServiceFunc(repository.GetUserByUsernameRepoFunc(db), auth.VerifyPassword, repository.SetUserLastLoginRepo(db)),
 	)
 
 	router := chi.NewRouter()
