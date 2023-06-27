@@ -6,9 +6,11 @@ import (
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
 
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
+
+	"github.com/samber/lo"
 )
 
-func MapErrorResponse(rw http.ResponseWriter, r *http.Request, err error) {
+func MapErrorResponse(rw http.ResponseWriter, r *http.Request, err error, info ...interface{}) {
 	logger := logging.GetLogger(r.Context())
 
 	wrappedErrors, isWrapped := err.(interface{ Unwrap() []error })
@@ -18,18 +20,23 @@ func MapErrorResponse(rw http.ResponseWriter, r *http.Request, err error) {
 
 		for _, err := range wrappedErrors.Unwrap() {
 			errs = append(errs, err)
+
 			logger.Info().AnErr("error", err).Msg(err.Error())
 		}
 
-		header(rw, errs[0])
+		addErrorHeader(rw, errs[0])
 	}
 
+	// If single error, check if there is an error message in info
 	if !isWrapped {
-		header(rw, err)
+		msg := lo.TernaryF(info == nil, func() string { return err.Error() }, func() string { return info[0].(string) })
+		logger.Info().AnErr("error", err).Msg(msg)
+
+		addErrorHeader(rw, err)
 	}
 }
 
-func header(rw http.ResponseWriter, err error) {
+func addErrorHeader(rw http.ResponseWriter, err error) {
 	if err == domain.ErrUserExists {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -37,6 +44,11 @@ func header(rw http.ResponseWriter, err error) {
 
 	if err == domain.ErrInvalidUsernameOrPassword {
 		http.Error(rw, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err == domain.ErrBadRequest {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 

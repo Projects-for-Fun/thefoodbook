@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 
 	"github.com/golang-jwt/jwt/v5"

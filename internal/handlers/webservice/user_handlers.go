@@ -8,8 +8,6 @@ import (
 
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
 
-	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
-
 	"github.com/Projects-for-Fun/thefoodbook/internal/core/domain"
 )
 
@@ -59,7 +57,7 @@ func (w *Webservice) HandleLogin(jwtKey []byte) http.HandlerFunc {
 		username, password, ok := r.BasicAuth()
 
 		if !ok {
-			rw.WriteHeader(http.StatusBadRequest)
+			MapErrorResponse(rw, r, domain.ErrBadRequest, "Authorization header missing")
 			return
 		}
 
@@ -71,7 +69,7 @@ func (w *Webservice) HandleLogin(jwtKey []byte) http.HandlerFunc {
 
 		expirationTime, tokenString, err := auth.CreateTokenForUser(*user, jwtKey)
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
+			MapErrorResponse(rw, r, err)
 			return
 		}
 
@@ -92,23 +90,20 @@ func (w *Webservice) HandleLogout(rw http.ResponseWriter, _ *http.Request) {
 
 func (w *Webservice) HandleRefresh(jwtKey []byte) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		logger := logging.GetLogger(r.Context())
-
 		claims, err := auth.GetClaims(r.Context())
 		if err != nil {
-			logger.Info().AnErr("error", err).Msg("Unauthorized user")
-			rw.WriteHeader(http.StatusUnauthorized)
+			MapErrorResponse(rw, r, domain.ErrUnauthorized)
+			return
 		}
 
 		if time.Until(claims.ExpiresAt.Time) > 30*time.Second {
-			logger.Info().Msg("Token expired")
-			rw.WriteHeader(http.StatusBadRequest)
+			MapErrorResponse(rw, r, domain.ErrBadRequest, "Token expired")
 			return
 		}
 
 		expirationTime, tokenString, err := auth.CreateTokenFromExistingClaims(claims, jwtKey)
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
+			MapErrorResponse(rw, r, err)
 			return
 		}
 
@@ -121,16 +116,13 @@ func (w *Webservice) HandleRefresh(jwtKey []byte) http.HandlerFunc {
 }
 
 func (w *Webservice) HandleWelcome(rw http.ResponseWriter, r *http.Request) {
-	logger := logging.GetLogger(r.Context())
-
 	claims, err := auth.GetClaims(r.Context())
 	if err != nil {
-		logger.Info().AnErr("error", err).Msg("Unauthorized user")
-		rw.WriteHeader(http.StatusUnauthorized)
+		MapErrorResponse(rw, r, err)
 	}
 
 	_, err = rw.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
 	if err != nil {
-		logger.Error().Err(err).Msg("Unexpected error")
+		MapErrorResponse(rw, r, err)
 	}
 }

@@ -28,13 +28,13 @@ func CreateUserServiceFunc(create adapter.CreateUserRepo) adapter.CreateUserServ
 	}
 }
 
-func LoginUserServiceFunc(validateLogin adapter.GetUserByUsernameRepo,
+func LoginUserServiceFunc(getUserByUsername adapter.GetUserByUsernameRepo,
 	verifyPassword func(password, hash string) bool,
 	setUserLastLogin adapter.SetUserLastLoginRepo) adapter.LoginUserService {
 	return func(ctx context.Context, username, password string) (*domain.User, error) {
 		logger := logging.GetLogger(ctx)
 
-		userLogged, err := validateLogin(ctx, username)
+		userLogged, err := getUserByUsername(ctx, username)
 
 		if err != nil {
 			logger.Info().
