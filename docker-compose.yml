@@ -2,9 +2,6 @@ version: "3.9"
 services:
   neo4j:
     image: neo4j:4.4.22
-#    volumes:
-#      - '$HOME/neo4j/data:/data'
-#      - '$HOME/neo4j/conf/:/conf/'
     ports:
       - 7474:7474
       - 7687:7687
@@ -37,20 +34,3 @@ services:
     depends_on:
       - neo4j
       - migrate
-#
-#    network_mode: "host"
-#    extra_hosts:
-#      - "host.docker.internal:172.0.0.1"
-#
-#      target: dev
-#    volumes:
-#      - .:/opt/app/api
-
-#  integration-tests:
-#    image: golang:1.20.5-alpine
-#    environment:
-#      API_URL: http://webservice:3001
-#    entrypoint: ["sh"]
-#    command: ["-c", "go test -tags integration_tests -v ./..."]
-#    depends_on:
-#      - webservice
