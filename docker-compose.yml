@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  neo4j:
+    image: neo4j:4.4.22
+#    volumes:
+#      - '$HOME/neo4j/data:/data'
+#      - '$HOME/neo4j/conf/:/conf/'
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: on-failure
+    command: neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/11223344
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1" ]
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./db/migrations:/migrations
+    command: ["-path", "/migrations", "-database",  "neo4j://neo4j:11223344@neo4j:7687", "up"]
+    restart: on-failure
+    depends_on:
+      - neo4j
+
+  webservice:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 3001:3000
+    env_file: .env.local
+    environment:
+      - DB_URI=neo4j://neo4j:11223344@neo4j:7687
+      - SERVICE_PORT=3000
+    depends_on:
+      - neo4j
+      - migrate
+#
+#    network_mode: "host"
+#    extra_hosts:
+#      - "host.docker.internal:172.0.0.1"
+#
+#      target: dev
+#    volumes:
+#      - .:/opt/app/api
+
+#  integration-tests:
+#    image: golang:1.20.5-alpine
+#    environment:
+#      API_URL: http://webservice:3001
+#    entrypoint: ["sh"]
+#    command: ["-c", "go test -tags integration_tests -v ./..."]
+#    depends_on:
+#      - webservice
