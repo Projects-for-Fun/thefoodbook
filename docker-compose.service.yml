@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  webservice:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 3000:3000
+    env_file: .env.local
+    environment:
+      - SERVICE_PORT=3000
+      - DB_URI=neo4j://neo4j:11223344@neo4j:7687
+#    depends_on:
+#      - neo4j
+#      - migrate

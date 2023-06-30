@@ -1,4 +1,0 @@
-DROP CONSTRAINT ON (a:SchemaMigration) ASSERT a.version IS UNIQUE
-
-DROP CONSTRAINT ON (u:User) ASSERT u.email IS UNIQUE
-DROP CONSTRAINT ON (u:User) ASSERT u.username IS UNIQUE

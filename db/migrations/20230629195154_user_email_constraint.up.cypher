@@ -1,0 +1,1 @@
+CREATE CONSTRAINT user_email_constraint IF NOT EXISTS FOR (u:User) REQUIRE u.email IS UNIQUE;

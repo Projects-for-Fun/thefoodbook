@@ -19,8 +19,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
-	logger.Info().Msg("Initializing webservice.")
+func SetupWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) *chi.Mux {
 	w := webservice.NewWebservice(
 		service.CreateUserServiceFunc(repository.CreateUserRepoFunc(db)),
 		service.LoginUserServiceFunc(repository.GetUserByUsernameRepoFunc(db), auth.VerifyPassword, repository.SetUserLastLoginRepo(db)),
@@ -43,6 +42,14 @@ func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger ze
 		router.Get("/welcome", w.HandleWelcome)
 		router.Post("/refresh", w.HandleRefresh(config.JWTKey))
 	})
+
+	return router
+}
+
+func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
+	logger.Info().Msg("Initializing webservice.")
+
+	router := SetupWebservice(config, db, logger)
 
 	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
 	return http.ListenAndServe(":"+config.ServicePort, router)

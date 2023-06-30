@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  neo4j:
+    image: neo4j:4.4.22
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: on-failure
+    command: neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/11223344
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1" ]
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./db/migrations:/migrations
+    command: ["-path", "/migrations", "-database",  "neo4j://neo4j:11223344@neo4j:7687", "up"]
+    restart: on-failure
+    depends_on:
+      - neo4j
+
+  webservice:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 3001:3000
+    env_file: .env.local
+    environment:
+      - DB_URI=neo4j://neo4j:11223344@neo4j:7687
+      - SERVICE_PORT=3000
+    depends_on:
+      - neo4j
+      - migrate
