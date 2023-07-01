@@ -9,7 +9,7 @@ import (
 )
 
 func NewDB(ctx context.Context, DBURI, DBUser, DBPass string, logger zerolog.Logger) neo4j.DriverWithContext {
-	driver, err := newDriver(ctx, DBURI, DBUser, DBPass, logger)
+	driver, err := NewDriver(ctx, DBURI, DBUser, DBPass, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Caller().Msg("Couldn't connect to the db.")
@@ -19,7 +19,7 @@ func NewDB(ctx context.Context, DBURI, DBUser, DBPass string, logger zerolog.Log
 	return driver
 }
 
-func newDriver(ctx context.Context, uri, username, password string, logger zerolog.Logger) (neo4j.DriverWithContext, error) {
+func NewDriver(ctx context.Context, uri, username, password string, logger zerolog.Logger) (neo4j.DriverWithContext, error) {
 	// Create Driver
 	driverWithContext, err := neo4j.NewDriverWithContext(uri, neo4j.BasicAuth(username, password, ""))
 

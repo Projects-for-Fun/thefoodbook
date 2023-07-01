@@ -4,27 +4,34 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
-
+	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/mws"
 	"github.com/Projects-for-Fun/thefoodbook/internal/repository"
 	"github.com/Projects-for-Fun/thefoodbook/internal/service"
-
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 	"github.com/Projects-for-Fun/thefoodbook/configs"
-	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/mws"
 	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 )
 
-func SetupWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) *chi.Mux {
+func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
+	logger.Info().Msg("Initializing webservice.")
+
 	w := webservice.NewWebservice(
 		service.CreateUserServiceFunc(repository.CreateUserRepoFunc(db)),
 		service.LoginUserServiceFunc(repository.GetUserByUsernameRepoFunc(db), auth.VerifyPassword, repository.SetUserLastLoginRepo(db)),
 	)
 
+	router := SetupRouter(config, w, logger)
+
+	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
+	return http.ListenAndServe(":"+config.ServicePort, router)
+}
+
+func SetupRouter(config *configs.Config, w *webservice.Webservice, logger zerolog.Logger) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Timeout(1 * time.Minute))
@@ -44,13 +51,4 @@ func SetupWebservice(config *configs.Config, db neo4j.DriverWithContext, logger 
 	})
 
 	return router
-}
-
-func RunWebservice(config *configs.Config, db neo4j.DriverWithContext, logger zerolog.Logger) error {
-	logger.Info().Msg("Initializing webservice.")
-
-	router := SetupWebservice(config, db, logger)
-
-	logger.Info().Msgf("Starting webservice on port %s.", config.ServicePort)
-	return http.ListenAndServe(":"+config.ServicePort, router)
 }

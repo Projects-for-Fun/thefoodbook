@@ -48,7 +48,7 @@ func main() {
 		err := webservice.RunWebservice(config, db, logger)
 
 		if err != nil {
-			logger.Fatal().Err(err).Msg("Webservice stopped")
+			logger.Error().Err(err).Msg("Webservice stopped")
 			database.CloseDriver(ctxWithCancel, db, logger)
 		}
 	default:

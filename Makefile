@@ -18,8 +18,11 @@ logs:
 	docker-compose -f docker-compose.service.yml logs
 	exit 1
 
-run-tests:
+run-test:
 	go test -count=1 -cover -v ./...
+
+run-integration: deps-up
+	docker-compose -f docker-compose.service.yml up -d integration_tests --build -d --force-recreate
 
 lint:
 	$(eval OUTPUT_OPTIONS = $(shell [ "${EXPORT_RESULT}" == "true" ] && echo "--out-format checkstyle ./... | tee /dev/tty > checkstyle-report.xml" || echo "" ))
