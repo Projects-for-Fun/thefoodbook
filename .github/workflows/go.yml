@@ -175,6 +175,9 @@ jobs:
           name: report-it.json
           path: ./files
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: Merge results
         run: |
           cat /files/coverage.json /files/coverage-it.json > /files/coverage-result.json && \
