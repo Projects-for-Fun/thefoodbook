@@ -23,21 +23,3 @@ services:
     restart: on-failure
     depends_on:
       - neo4j
-
-  integration_tests:
-    image: golang:1.20.5-alpine
-    entrypoint: ["sh"]
-    volumes:
-      - .:/app
-    command: ["-c", "cd /app/test/integrationtests && go test -v ./..."]
-    environment:
-      - RUN_INTEGRATION_TESTS=1
-      - ENVIRONMENT=it-pipeline
-      - SERVICE_NAME=thefoodbook
-      - SERVICE_PORT=3000
-      - LOG_LEVEL=info
-      - LOG_FORMAT=console
-      - DB_URI=neo4j://neo4j:11223344@neo4j:7687
-      - DB_USER=neo4j
-      - DB_PASS=11223344
-      - JWT_KEY=my_random_secret_key_for_testing
