@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Display structure of files
+        run: ls -R
+
       - name: Build infra
         run: docker-compose -f docker-compose.integration-pipeline.yml up -d neo4j && \
           docker-compose -f docker-compose.integration-pipeline.yml up -d migrate
