@@ -1,21 +1,21 @@
 .PHONY: infra-up infra-down webservice cleanup logs run-tests lint
 
 infra-up:
-	docker-compose -f docker-compose.dependencies.yml up -d neo4j
-	docker-compose -f docker-compose.dependencies.yml up -d migrate
+	docker-compose -f docker-compose.local.yml up -d neo4j
+	docker-compose -f docker-compose.local.yml up -d migrate
 
 infra-down:
-	docker-compose -f docker-compose.dependencies.yml down --remove-orphans
+	docker-compose -f docker-compose.local.yml down neo4j --remove-orphans
+	docker-compose -f docker-compose.local.yml down migrate --remove-orphans
 
 webservice: infra-up
-	docker-compose -f docker-compose.service.yml up -d webservice --build -d --force-recreate
+	docker-compose -f docker-compose.local.yml up -d webservice --build -d --force-recreate
 
 cleanup:
-	docker-compose down --remove-orphans
+	docker-compose -f docker-compose.local.yml down --remove-orphans
 
 logs:
-	docker-compose -f docker-compose.dependencies.yml logs
-	docker-compose -f docker-compose.service.yml logs
+	docker-compose -f docker-compose.local.yml logs
 	exit 1
 
 run-test:
@@ -24,9 +24,9 @@ run-test:
 run-integration: create-integration-tests cleanup
 
 create-integration-tests:
-	docker-compose -f docker-compose.dependencies.yml up --build -d neo4j --force-recreate
-	docker-compose -f docker-compose.dependencies.yml up --build -d migrate --force-recreate
-	docker-compose -f docker-compose.service.yml up integration_tests --build --abort-on-container-exit --exit-code-from=integration_tests --force-recreate
+	docker-compose -f docker-compose.local.yml up --build -d neo4j --force-recreate
+	docker-compose -f docker-compose.local.yml up --build -d migrate --force-recreate
+	docker-compose -f docker-compose.local.yml up integration_tests --build --abort-on-container-exit --exit-code-from=integration_tests --force-recreate
 
 
 lint:
