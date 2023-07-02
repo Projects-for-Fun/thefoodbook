@@ -17,7 +17,7 @@ jobs:
           docker-compose -f docker-compose.integration-pipeline.yml up -d migrate
 
       - name: Run integration tests
-        run: docker-compose -f docker-compose.local.yml up integration_tests --build --abort-on-container-exit --exit-code-from=integration_tests --force-recreate
+        run: docker-compose -f docker-compose.integration-pipeline.yml up integration_tests --build --abort-on-container-exit --exit-code-from=integration_tests --force-recreate
 
       - name: Cleanup
         run: docker-compose -f docker-compose.integration-pipeline.yml down --remove-orphans
