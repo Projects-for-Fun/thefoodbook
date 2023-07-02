@@ -24,14 +24,8 @@ jobs:
       - name: Build infra - migrate
         run: docker-compose -f docker-compose.integration-pipeline.yml up -d migrate
 
-      - name: Logs
-        run: docker-compose -f docker-compose.integration-pipeline.yml logs
-
       - name: Run integration tests
         run: docker-compose -f docker-compose.integration-pipeline.yml up integration_tests
-
-      - name: Logs
-        run: docker-compose -f docker-compose.integration-pipeline.yml logs
 
       - name: Cleanup
         run: docker-compose -f docker-compose.integration-pipeline.yml down --remove-orphans
