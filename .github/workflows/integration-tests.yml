@@ -11,7 +11,7 @@ jobs:
     services:
       neo4j:
         image: neo4j:4.4.22
-        environment:
+        env:
           NEO4J_AUTH: neo4j/11223344
         ports:
           - 7474:7474
