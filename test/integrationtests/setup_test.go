@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-
 	"github.com/Projects-for-Fun/thefoodbook/configs"
 	"github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice"
 	"github.com/Projects-for-Fun/thefoodbook/internal/repository"
@@ -16,15 +14,8 @@ import (
 	"github.com/Projects-for-Fun/thefoodbook/pkg/database"
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/auth"
 	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/zerolog"
-)
-
-var (
-	//nolint:all
-	db     neo4j.DriverWithContext
-	logger zerolog.Logger
-
-	w *webservice.Webservice
 )
 
 func runIntegrationTests() bool {
@@ -37,23 +28,26 @@ func runIntegrationTests() bool {
 	return shouldRunIntegrationTests
 }
 
-func setup(t *testing.T, ctx context.Context) {
-	logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, NoColor: false}).With().Caller().Timestamp().Logger()
+func setup(t *testing.T, ctx context.Context) (*configs.Config, neo4j.DriverWithContext, *webservice.Webservice, zerolog.Logger) {
+	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, NoColor: false}).With().Caller().Timestamp().Logger()
+	ctx = logging.AttachLogger(ctx, logger)
 
 	config, err := configs.NewConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, err := database.NewDriver(ctx, config.DBURI, config.DBUser, config.DBPass, logger)
+	db, err := database.NewDriver(ctx, config.DBURI, config.DBUser, config.DBPass)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	w = webservice.NewWebservice(
+	w := webservice.NewWebservice(
 		service.CreateUserServiceFunc(repository.CreateUserRepoFunc(db)),
 		service.LoginUserServiceFunc(repository.GetUserByUsernameRepoFunc(db), auth.VerifyPassword, repository.SetUserLastLoginRepo(db)),
 	)
+
+	return config, db, w, logger
 }
 
 func LoggerTestMiddleware(logger zerolog.Logger) func(next http.Handler) http.Handler {
@@ -63,5 +57,11 @@ func LoggerTestMiddleware(logger zerolog.Logger) func(next http.Handler) http.Ha
 		}
 
 		return http.HandlerFunc(fn)
+	}
+}
+
+func AuthTestMiddleware(_ []byte) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return next
 	}
 }
