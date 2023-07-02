@@ -1,5 +1,8 @@
 name: Integration tests Test
 
+on:
+  push
+
 jobs:
   integration-tests:
     name: Integration tests
