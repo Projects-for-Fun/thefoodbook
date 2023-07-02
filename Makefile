@@ -35,8 +35,9 @@ it-with-reports:
 	export DB_USER=neo4j
 	export DB_PASS=11223344
 	export JWT_KEY=my_random_secret_key_for_testing
-	cd ./test/integrationtests && go test -v "./..." -coverprofile="../../files/coverage.out" -covermode=count -json >> ../../files/report.json
+	#cd ./test/integrationtests && go test -v "./..." -coverprofile="../../files/coverage.out" -covermode=count -json >> ../../files/report.json
 	#go test -v "./test/integrationtests/..." -covermode=count -json >> ./files/report.json
+	go test -v "./..." -coverprofile="./files/coverage.out" -covermode=count -json >> ./files/report.json
 
 run-integration: create-integration-tests cleanup
 
