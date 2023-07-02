@@ -4,22 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/Projects-for-Fun/thefoodbook/pkg/sys/logging"
+
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/rs/zerolog"
 )
 
-func NewDB(ctx context.Context, DBURI, DBUser, DBPass string, logger zerolog.Logger) neo4j.DriverWithContext {
-	driver, err := NewDriver(ctx, DBURI, DBUser, DBPass, logger)
-
-	if err != nil {
-		logger.Fatal().Err(err).Caller().Msg("Couldn't connect to the db.")
-	}
-
-	logger.Info().Msg("Connected to db. Obtained new driver with context.")
-	return driver
-}
-
-func NewDriver(ctx context.Context, uri, username, password string, logger zerolog.Logger) (neo4j.DriverWithContext, error) {
+func NewDriver(ctx context.Context, uri, username, password string) (neo4j.DriverWithContext, error) {
 	// Create Driver
 	driverWithContext, err := neo4j.NewDriverWithContext(uri, neo4j.BasicAuth(username, password, ""))
 
@@ -32,6 +23,7 @@ func NewDriver(ctx context.Context, uri, username, password string, logger zerol
 	for i := 1; i < 5; i++ {
 		err = driverWithContext.VerifyConnectivity(ctx)
 		if err != nil {
+			logger := logging.GetLogger(ctx)
 			logger.Warn().Err(err).Msg("DB is not ready. Sleeping for 5 seconds")
 			time.Sleep(5 * time.Second)
 		} else {
