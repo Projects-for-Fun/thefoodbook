@@ -16,3 +16,11 @@ jobs:
         ports:
           - 7474:7474
           - 7687:7687
+
+      migrate:
+        image: migrate/migrate
+#        options: -path /migrations -database neo4j://neo4j:11223344@neo4j:7687 up
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
