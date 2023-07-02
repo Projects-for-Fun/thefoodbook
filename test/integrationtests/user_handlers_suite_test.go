@@ -231,7 +231,7 @@ func (suite *UserHandlersTestSuite) TestLoginHandler() {
 			description:   "Happy case return 200",
 			hasAuthHeader: true,
 			username:      "username",
-			password:      "password",
+			password:      "password1",
 			cookieSet:     true,
 			status:        http.StatusOK,
 		},
