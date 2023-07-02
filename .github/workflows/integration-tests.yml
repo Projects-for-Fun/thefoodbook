@@ -1,8 +1,5 @@
 name: Integration tests Test
 
-on:
-  commit
-
 jobs:
   integration-tests:
     name: Integration tests
