@@ -177,8 +177,8 @@ jobs:
 
       - name: Merge results
         run: |
-          cat coverage.json coverage-it.json > coverage-result.json && \
-          cat report.json report-it.json > report-result.json
+          cat /files/coverage.json /files/coverage-it.json > /files/coverage-result.json && \
+          cat /files/report.json /files/report-it.json > /files/report-result.json
 
       - name: Display structure of downloaded files
         run: ls -R
