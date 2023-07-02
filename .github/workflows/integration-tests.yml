@@ -31,16 +31,16 @@ jobs:
           go-version-file: ./go.mod
 
       - name: Set env vars for integration tests
-        run: >-
-          export RUN_INTEGRATION_TESTS=1
-          echo "ENVIRONMENT=it-pipeline" >> "$GITHUB_ENV"
-          echo "SERVICE_NAME=thefoodbook" >> "$GITHUB_ENV"
-          echo "SERVICE_PORT=3000" >> "$GITHUB_ENV"
-          echo "LOG_LEVEL=info" >> "$GITHUB_ENV"
-          echo "LOG_FORMAT=console" >> "$GITHUB_ENV"
-          echo "DB_URI=neo4j://neo4j:11223344@localhost:7687" >> "$GITHUB_ENV"
-          echo "DB_USER=neo4j" >> "$GITHUB_ENV"
-          echo "DB_PASS=11223344" >> "$GITHUB_ENV"
+        run: |
+          export RUN_INTEGRATION_TESTS=1 && \
+          echo "ENVIRONMENT=it-pipeline" >> "$GITHUB_ENV" && \
+          echo "SERVICE_NAME=thefoodbook" >> "$GITHUB_ENV" && \
+          echo "SERVICE_PORT=3000" >> "$GITHUB_ENV" && \
+          echo "LOG_LEVEL=info" >> "$GITHUB_ENV" && \
+          echo "LOG_FORMAT=console" >> "$GITHUB_ENV" && \
+          echo "DB_URI=neo4j://neo4j:11223344@localhost:7687" >> "$GITHUB_ENV" && \
+          echo "DB_USER=neo4j" >> "$GITHUB_ENV" && \
+          echo "DB_PASS=11223344" >> "$GITHUB_ENV" && \
           echo "JWT_KEY=my_random_secret_key_for_testing" >> "$GITHUB_ENV"
 
       - name: Test
