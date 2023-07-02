@@ -54,26 +54,30 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
-      - run: mkdir -p ./files
+#      - run: mkdir -p ./files
 
-      - name: Unit tests & generate coverage and report
+#      - name: Unit tests & generate coverage and report
+#        run: |
+#          go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
+
+      - name: Unit tests
         run: |
-          go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
+          go test ./...
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: coverage.out
-          path: ./files/coverage.out
-          if-no-files-found: warn
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: report.json
-          path: ./files/report.json
-          if-no-files-found: warn
-
-      - name: Display structure of files
-        run: ls -R
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage.out
+#          path: ./files/coverage.out
+#          if-no-files-found: warn
+#
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: report.json
+#          path: ./files/report.json
+#          if-no-files-found: warn
+#
+#      - name: Display structure of files
+#        run: ls -R
 
   integration-tests:
     name: Integration tests
@@ -102,10 +106,10 @@ jobs:
           check-latest: true
           go-version-file: ./go.mod
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: report.json
-          path: ./files
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: report.json
+#          path: ./files
 
       - name: Set env vars for integration tests
         run: |
@@ -120,8 +124,13 @@ jobs:
           echo "DB_PASS=11223344" >> "$GITHUB_ENV" && \
           echo "JWT_KEY=my_random_secret_key_for_testing" >> "$GITHUB_ENV"
 
+      - run: mkdir -p ./files
+
+#      - name: Integration tests & generate report
+#        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
+
       - name: Integration tests & generate report
-        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
+        run: go test -v "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
 
       - uses: actions/upload-artifact@v3
         with:
