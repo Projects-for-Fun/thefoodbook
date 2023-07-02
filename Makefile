@@ -21,6 +21,23 @@ logs:
 run-test:
 	go test -count=1 -cover -v ./...
 
+t-with-reports:
+	go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
+
+it-with-reports:
+	export RUN_INTEGRATION_TESTS=1
+	export ENVIRONMENT=it-pipeline
+	export SERVICE_NAME=thefoodbook
+	export SERVICE_PORT=3000
+	export LOG_LEVEL=info
+	export LOG_FORMAT=console
+	export DB_URI=neo4j://neo4j:11223344@neo4j:7687
+	export DB_USER=neo4j
+	export DB_PASS=11223344
+	export JWT_KEY=my_random_secret_key_for_testing
+	cd ./test/integrationtests && go test -v "./..." -coverprofile="../../files/coverage.out" -covermode=count -json >> ../../files/report.json
+	#go test -v "./test/integrationtests/..." -covermode=count -json >> ./files/report.json
+
 run-integration: create-integration-tests cleanup
 
 create-integration-tests:
