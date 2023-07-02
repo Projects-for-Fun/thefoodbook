@@ -138,6 +138,12 @@ jobs:
           path: ./files/report.json
           if-no-files-found: warn
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coverage.out
+          path: ./files/coverage.out
+          if-no-files-found: warn
+
       - name: Display structure of files
         run: ls -R
 
