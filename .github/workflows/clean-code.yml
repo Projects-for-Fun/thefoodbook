@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Linting
-        uses: Projects-for-Fun/go-github-actions/linting@v0.0.2
+        uses: Projects-for-Fun/go-github-actions/actions/linting@v0.0.2
 
   unit-tests:
     name: Unit tests
