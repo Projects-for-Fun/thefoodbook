@@ -23,9 +23,18 @@ runs:
     - run: mkdir -p ./files
       shell: bash
 
+    - name: Unit tests
+      if: ${{ !inputs.SAVE_REPORTS }}
+      shell: bash
+      run: go test "./..."
+
     - name: Unit tests & generate coverage and report
+      if: ${{ inputs.SAVE_REPORTS }}
       shell: bash
       run: go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
+
+    - shell: bash
+      run: echo "Upload reports? => ${{ inputs.SAVE_REPORTS }}"
 
     - name: Upload coverage.out
       uses: actions/upload-artifact@v3
