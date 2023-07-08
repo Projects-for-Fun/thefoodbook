@@ -5,6 +5,7 @@ on:
     branches:
       # On all commits except from main branch
       - '!main'
+
 jobs:
   lint:
     name: Lint
