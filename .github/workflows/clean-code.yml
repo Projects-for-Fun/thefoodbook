@@ -31,39 +31,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Go
-        uses: actions/setup-go@v3
+      - name: Run unit tests
+        uses: ./actions/unitTests
         with:
-          check-latest: true
-          go-version-file: ./go.mod
-
-      - name: Verify dependencies
-        run: go mod verify
-
-      - run: mkdir -p ./files
-
-      - name: Unit tests & generate coverage and report
-        run: |
-          go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
-
-      - name: Unit tests
-        run: |
-          go test ./...
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: coverage.out
-          path: ./files/coverage.out
-          if-no-files-found: warn
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: report.json
-          path: ./files/report.json
-          if-no-files-found: warn
-
-      - name: Display structure of files
-        run: ls -R
+          saveReports: false
 
   integration-tests:
     name: Integration tests
@@ -73,59 +44,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - name: Run integration tests
+        uses: ./actions/integrationTests
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build infra - neo4j
-        run: docker-compose -f docker-compose.integration-pipeline.yml up -d neo4j
-
-      - name: Build infra - migrate
-        run: docker-compose -f docker-compose.integration-pipeline.yml up -d migrate
-
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          check-latest: true
-          go-version-file: ./go.mod
-
-      - name: Set env vars for integration tests
-        run: |
-          echo "RUN_INTEGRATION_TESTS=1" >> "$GITHUB_ENV" && \
-          echo "ENVIRONMENT=it-pipeline" >> "$GITHUB_ENV" && \
-          echo "SERVICE_NAME=thefoodbook" >> "$GITHUB_ENV" && \
-          echo "SERVICE_PORT=3000" >> "$GITHUB_ENV" && \
-          echo "LOG_LEVEL=info" >> "$GITHUB_ENV" && \
-          echo "LOG_FORMAT=console" >> "$GITHUB_ENV" && \
-          echo "DB_URI=neo4j://neo4j:11223344@localhost:7687" >> "$GITHUB_ENV" && \
-          echo "DB_USER=neo4j" >> "$GITHUB_ENV" && \
-          echo "DB_PASS=11223344" >> "$GITHUB_ENV" && \
-          echo "JWT_KEY=my_random_secret_key_for_testing" >> "$GITHUB_ENV"
-
-      - run: mkdir -p ./files
-
-      #      - name: Integration tests & generate report
-      #        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
-
-      - name: Integration tests & generate report
-        run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage-it.out" -covermode=count -json > ./files/report-it.json
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: report-it.json
-          path: ./files/report-it.json
-          if-no-files-found: warn
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: coverage-it.out
-          path: ./files/coverage-it.out
-          if-no-files-found: warn
-
-      - name: Display structure of files
-        run: ls -R
-
-      - name: Cleanup
-        run: docker-compose -f docker-compose.integration-pipeline.yml down --remove-orphans
+          saveReports: false
