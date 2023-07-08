@@ -48,3 +48,4 @@ jobs:
         uses: ./actions/integrationTests
         with:
           saveReports: false
+          dockerHubUsername: ${{ secrets.DOCKERHUB_USERNAME }}
