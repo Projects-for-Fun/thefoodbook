@@ -31,18 +31,21 @@ runs:
         name: report-it.json
         path: ./files
 
-    - name: Display structure of downloaded files
-      run: ls -R
+#    - name: Display structure of downloaded files
+#      shell: bash
+#      run: ls -R
 
     - name: Merge results
+      shell: bash
       run: |
         touch ./files/coverage-result.out && \
         touch ./files/report-result.json && \
         cat ./files/coverage.out ./files/coverage-it.out > ./files/coverage-result.out && \
         cat ./files/report.json ./files/report-it.json > ./files/report-result.json
 
-    - name: Display structure of downloaded files
-      run: ls -R
+#    - name: Display structure of downloaded files
+#      shell: bash
+#      run: ls -R
 
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master

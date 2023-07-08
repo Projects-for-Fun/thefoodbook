@@ -1,4 +1,4 @@
-name: Go
+name: PR or push to main
 
 on:
   push:
@@ -52,7 +52,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   sonar:
-    name: Lint
+    name: Sonar
     runs-on: ubuntu-latest
     needs: [lint, unit-tests, integration-tests]
     steps:
