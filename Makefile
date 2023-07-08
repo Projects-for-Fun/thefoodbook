@@ -23,6 +23,7 @@ run-test:
 
 t-with-reports:
 	go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
+	#go test "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
 
 it-with-reports:
 	export RUN_INTEGRATION_TESTS=1
@@ -46,8 +47,10 @@ create-integration-tests:
 	docker-compose -f docker-compose.local.yml up --build -d migrate --force-recreate
 	docker-compose -f docker-compose.local.yml up integration_tests --build --abort-on-container-exit --exit-code-from=integration_tests --force-recreate
 
+golangci-file:
+	curl https://raw.githubusercontent.com/Projects-for-Fun/golangci/main/.golangci.yml --output ./.golangci.yml
 
-lint:
+lint-docker:
 	$(eval OUTPUT_OPTIONS = $(shell [ "${EXPORT_RESULT}" == "true" ] && echo "--out-format checkstyle ./... | tee /dev/tty > checkstyle-report.xml" || echo "" ))
 	docker run \
 		-it \
@@ -58,3 +61,5 @@ lint:
 		-w /app \
 		golangci/golangci-lint:latest golangci-lint run --deadline=65s $(OUTPUT_OPTIONS) -v
 		-c ./.golangci.yml
+
+lint: golangci-file lint-docker
