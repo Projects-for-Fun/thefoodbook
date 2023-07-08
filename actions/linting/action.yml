@@ -20,6 +20,7 @@ runs:
         go-version-file: ./go.mod
 
     - name: Download .golangci.yml
+      shell: bash
       run: curl https://raw.githubusercontent.com/Projects-for-Fun/golangci/main/.golangci.yml --output /tmp/.golangci.yml
 
     - name: golangci-lint
