@@ -49,3 +49,4 @@ jobs:
         with:
           saveReports: false
           dockerHubUsername: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerHubToken: ${{ secrets.DOCKERHUB_TOKEN }}
