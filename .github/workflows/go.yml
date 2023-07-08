@@ -60,6 +60,10 @@ jobs:
         run: |
           go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
 
+      - name: Unit tests
+        run: |
+          go test ./...
+
       - uses: actions/upload-artifact@v3
         with:
           name: coverage.out
@@ -102,11 +106,6 @@ jobs:
           check-latest: true
           go-version-file: ./go.mod
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: report.json
-          path: ./files
-
       - name: Set env vars for integration tests
         run: |
           echo "RUN_INTEGRATION_TESTS=1" >> "$GITHUB_ENV" && \
@@ -120,13 +119,24 @@ jobs:
           echo "DB_PASS=11223344" >> "$GITHUB_ENV" && \
           echo "JWT_KEY=my_random_secret_key_for_testing" >> "$GITHUB_ENV"
 
+      - run: mkdir -p ./files
+
+#      - name: Integration tests & generate report
+#        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
+
       - name: Integration tests & generate report
-        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
+        run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage-it.out" -covermode=count -json > ./files/report-it.json
 
       - uses: actions/upload-artifact@v3
         with:
-          name: report.json
-          path: ./files/report.json
+          name: report-it.json
+          path: ./files/report-it.json
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coverage-it.out
+          path: ./files/coverage-it.out
           if-no-files-found: warn
 
       - name: Display structure of files
@@ -152,8 +162,28 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
+          name: coverage-it.out
+          path: ./files
+
+      - uses: actions/download-artifact@v3
+        with:
           name: report.json
           path: ./files
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: report-it.json
+          path: ./files
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Merge results
+        run: |
+          touch ./files/coverage-result.out && \
+          touch ./files/report-result.json && \
+          cat ./files/coverage.out ./files/coverage-it.out > ./files/coverage-result.out && \
+          cat ./files/report.json ./files/report-it.json > ./files/report-result.json
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -165,8 +195,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.go.tests.reportPath=files/report.json
-            -Dsonar.go.coverage.reportPaths=files/coverage.out
+            -Dsonar.go.tests.reportPath=files/report-result.json
+            -Dsonar.go.coverage.reportPaths=files/coverage-result.out
             -Dsonar.sources=.
 
 
