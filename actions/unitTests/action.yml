@@ -25,16 +25,7 @@ runs:
 
     - name: Unit tests & generate coverage and report
       shell: bash
-      run: |
-        if ${{ inputs.SAVE_REPORTS }}; then
-          go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
-        else
-          go test "./..."
-        fi
-
-    - name: Upload reports?
-      shell: bash
-      run: echo "Upload reports? => ${{ inputs.SAVE_REPORTS }}"
+      run: go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
 
     - name: Upload coverage.out
       uses: actions/upload-artifact@v3
