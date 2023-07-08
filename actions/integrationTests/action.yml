@@ -62,7 +62,7 @@ runs:
 
     - name: Upload coverage.out? => ${{ inputs.SAVE_REPORTS }}
       uses: actions/upload-artifact@v3
-      if: ${{ inputs.SAVE_REPORTS }}
+      if: ${{ !inputs.SAVE_REPORTS }}
       with:
         name: coverage-it.out
         path: ./files/coverage-it.out
@@ -70,7 +70,7 @@ runs:
 
     - name: Upload report.json? => ${{ inputs.SAVE_REPORTS }}
       uses: actions/upload-artifact@v3
-      if: ${{ inputs.SAVE_REPORTS }}
+      if: ${{ !inputs.SAVE_REPORTS }}
       with:
         name: report-it.json
         path: ./files/report-it.json
