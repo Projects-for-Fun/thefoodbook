@@ -57,12 +57,12 @@ runs:
     #        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
 
     - name: Integration tests
-      if: inputs.SAVE_REPORTS == false
+      if: inputs.SAVE_REPORTS == 'false'
       shell: bash
       run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice"
 
     - name: Integration tests
-      if: inputs.SAVE_REPORTS == true
+      if: inputs.SAVE_REPORTS == 'true'
       shell: bash
       run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage-it.out" -covermode=count -json > ./files/report-it.json
 
