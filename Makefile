@@ -40,12 +40,12 @@ it-with-reports:
 	#go test -v "./test/integrationtests/..." -covermode=count -json >> ./files/report.json
 	go test -v "./..." -coverprofile="./files/coverage.out" -covermode=count -json >> ./files/report.json
 
-run-integration: create-integration-tests cleanup
-
 create-integration-tests:
 	docker-compose -f docker-compose.local.yml up --build -d neo4j --force-recreate
 	docker-compose -f docker-compose.local.yml up --build -d migrate --force-recreate
 	docker-compose -f docker-compose.local.yml up integration_tests --build --abort-on-container-exit --exit-code-from=integration_tests --force-recreate
+
+run-integration: create-integration-tests cleanup
 
 golangci-file:
 	curl https://raw.githubusercontent.com/Projects-for-Fun/golangci/main/.golangci.yml --output ./.golangci.yml

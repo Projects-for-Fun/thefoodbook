@@ -207,13 +207,13 @@ func (suite *UserHandlersTestSuite) TestLoginHandler() {
 		status        int
 	}{
 		{
-			description:   "When trying to sign up without Authorization header return 400",
+			description:   "When trying to login without Authorization header return 400",
 			hasAuthHeader: false,
 			cookieSet:     false,
 			status:        http.StatusBadRequest,
 		},
 		{
-			description:   "When trying to sign up with wrong username return 400",
+			description:   "When trying to login with wrong username return 401",
 			hasAuthHeader: true,
 			username:      "",
 			password:      "password",
@@ -221,7 +221,7 @@ func (suite *UserHandlersTestSuite) TestLoginHandler() {
 			status:        http.StatusUnauthorized,
 		},
 		{
-			description:   "When trying to sign up with wrong password return 400",
+			description:   "When trying to login with wrong password return 401",
 			hasAuthHeader: true,
 			username:      "username",
 			password:      "",
