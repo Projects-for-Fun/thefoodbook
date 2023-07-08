@@ -1,0 +1,62 @@
+name: Linting and testings
+
+on:
+  push:
+    branches:
+      # On all commits except from main branch
+      - '**'
+      - '!main'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request }}
+    steps:
+
+      - name: Check
+        shell: bash
+        run: echo ${{ github.event.pull_request }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      - name: Linting
+        uses: Projects-for-Fun/go-github-actions/Lint@v0.0.4
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      - name: Run unit tests
+        uses: Projects-for-Fun/go-github-actions/UnitTests@v0.0.4
+        with:
+          SAVE_REPORTS: false
+
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run integration tests
+        uses: ./actions/integrationTests
+        with:
+          SAVE_REPORTS: false
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
