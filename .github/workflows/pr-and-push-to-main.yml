@@ -11,6 +11,10 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
+      - name: Check
+        shell: bash
+        run: echo ${{ github.event.pull_request }}
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
