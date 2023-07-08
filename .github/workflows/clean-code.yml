@@ -22,8 +22,8 @@ jobs:
       - name: Download .golangci.yml
         run: curl https://raw.githubusercontent.com/Projects-for-Fun/golangci/main/.golangci.yml --output /tmp/.golangci.yml
 
-      - name: Display structure of files
-        run: ls -R
+      - name: Display .golangci.yml
+        run: cat /tmp/.golangci.yml
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
