@@ -20,9 +20,11 @@ runs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build infra - neo4j
+      shell: bash
       run: docker-compose -f docker-compose.integration-pipeline.yml up -d neo4j
 
     - name: Build infra - migrate
+      shell: bash
       run: docker-compose -f docker-compose.integration-pipeline.yml up -d migrate
 
     - name: Install Go
@@ -32,6 +34,7 @@ runs:
         go-version-file: ./go.mod
 
     - name: Set env vars for integration tests
+      shell: bash
       run: |
         echo "RUN_INTEGRATION_TESTS=1" >> "$GITHUB_ENV" && \
         echo "ENVIRONMENT=it-pipeline" >> "$GITHUB_ENV" && \
@@ -45,11 +48,13 @@ runs:
         echo "JWT_KEY=my_random_secret_key_for_testing" >> "$GITHUB_ENV"
 
     - run: mkdir -p ./files
+      shell: bash
 
     #      - name: Integration tests & generate report
     #        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
 
     - name: Integration tests & generate report
+      shell: bash
       run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage-it.out" -covermode=count -json > ./files/report-it.json
 
     - name: Upload coverage.out? => ${{ inputs.saveReports }}
@@ -67,7 +72,9 @@ runs:
         if-no-files-found: warn
 
     - name: Display structure of files
+      shell: bash
       run: ls -R
 
     - name: Cleanup
+      shell: bash
       run: docker-compose -f docker-compose.integration-pipeline.yml down --remove-orphans

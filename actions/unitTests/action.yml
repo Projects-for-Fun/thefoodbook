@@ -20,11 +20,14 @@ runs:
         go-version-file: ./go.mod
 
     - name: Verify dependencies
+      shell: bash
       run: go mod verify
 
     - run: mkdir -p ./files
+      shell: bash
 
     - name: Unit tests & generate coverage and report
+      shell: bash
       run: |
         go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
 
@@ -49,4 +52,5 @@ runs:
         if-no-files-found: warn
 
     - name: Display structure of files
+      shell: bash
       run: ls -R

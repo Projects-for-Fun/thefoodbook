@@ -21,9 +21,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Display structure of files
-        run: ls -R
-
       - name: Linting
         uses: ./actions/linting
 
