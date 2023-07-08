@@ -42,7 +42,7 @@ func addErrorHeader(rw http.ResponseWriter, err error) {
 		return
 	}
 
-	if err == domain.ErrInvalidUsernameOrPassword {
+	if err == domain.ErrInvalidUsernameOrPassword || err == domain.ErrUnauthorized {
 		http.Error(rw, err.Error(), http.StatusUnauthorized)
 		return
 	}
