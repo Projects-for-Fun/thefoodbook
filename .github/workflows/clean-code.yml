@@ -6,15 +6,17 @@ on:
       # On all commits except from main branch
       - '**'
       - '!main'
-  pull_request:
-    branches:
-      - '!main'
 
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
+      - name: Check
+        shell: bash
+        run: echo ${{ github.event.pull_request }}
+
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
