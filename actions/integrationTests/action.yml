@@ -56,6 +56,9 @@ runs:
     #      - name: Integration tests & generate report
     #        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
 
+    - shell: bash
+      run: echo "Upload reports? => ${{ inputs.SAVE_REPORTS }}"
+
     - name: Integration tests
       if: inputs.SAVE_REPORTS == 'false'
       shell: bash
@@ -66,12 +69,10 @@ runs:
       shell: bash
       run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage-it.out" -covermode=count -json > ./files/report-it.json
 
-    - shell: bash
-      run: echo "Upload reports? => ${{ inputs.SAVE_REPORTS }}"
 
     - name: Upload coverage.out
       uses: actions/upload-artifact@v3
-      if: ${{ !inputs.SAVE_REPORTS }}
+      if: inputs.SAVE_REPORTS == 'true'
       with:
         name: coverage-it.out
         path: ./files/coverage-it.out
@@ -79,7 +80,7 @@ runs:
 
     - name: Upload report.json
       uses: actions/upload-artifact@v3
-      if: ${{ !inputs.SAVE_REPORTS }}
+      if: inputs.SAVE_REPORTS == 'true'
       with:
         name: report-it.json
         path: ./files/report-it.json
