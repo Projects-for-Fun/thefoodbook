@@ -11,6 +11,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request }}
     steps:
       - name: Check
         shell: bash
