@@ -20,7 +20,7 @@ runs:
       uses: docker/login-action@v2
       with:
         username: ${{ inputs.dockerHubUsername }}
-        password: ${{ inputs.token }}
+        password: ${{ inputs.dockerHubToken }}
 
     - name: Build infra - neo4j
       shell: bash
