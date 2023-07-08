@@ -1,6 +1,6 @@
 # The Food Book
 
-[![Github Actions](https://github.com/Projects-for-Fun/thefoodbook/actions/workflows/go.yml/badge.svg)](https://github.com/Projects-for-Fun/thefoodbook/actions/workflows/go.yml)
+[![Github Actions](https://github.com/Projects-for-Fun/thefoodbook/actions/workflows/pr-and-push-to-main.yml/badge.svg)](https://github.com/Projects-for-Fun/thefoodbook/actions/workflows/pr-and-push-to-main.yml)
 
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Projects-for-Fun_thefoodbook&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Projects-for-Fun_thefoodbook)
