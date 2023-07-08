@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Linting
-        uses: Projects-for-Fun/go-github-actions/Lint@v0.0.3
+        uses: Projects-for-Fun/go-github-actions/Lint@v0.0.4
 
   unit-tests:
     name: Unit tests
@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run unit tests
-        uses: Projects-for-Fun/go-github-actions/UnitTests@v0.0.3
+        uses: Projects-for-Fun/go-github-actions/UnitTests@v0.0.4
         with:
           SAVE_REPORTS: false
 
