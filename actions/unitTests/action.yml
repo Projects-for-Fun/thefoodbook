@@ -38,7 +38,7 @@ runs:
 
     - name: Upload coverage.out
       uses: actions/upload-artifact@v3
-      if: ${{ !inputs.SAVE_REPORTS }}
+      if: ${{ inputs.SAVE_REPORTS }}
       with:
         name: coverage.out
         path: ./files/coverage.out
@@ -46,7 +46,7 @@ runs:
 
     - name: Upload report.json
       uses: actions/upload-artifact@v3
-      if: ${{ !inputs.SAVE_REPORTS }}
+      if: ${{ inputs.SAVE_REPORTS }}
       with:
         name: report.json
         path: ./files/report.json

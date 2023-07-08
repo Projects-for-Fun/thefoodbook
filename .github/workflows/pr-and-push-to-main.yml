@@ -47,7 +47,7 @@ jobs:
       - name: Run integration tests
         uses: ./actions/integrationTests
         with:
-          SAVE_REPORTS: false
+          SAVE_REPORTS: true
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
