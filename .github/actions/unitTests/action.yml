@@ -3,7 +3,7 @@ name: Unit tests
 inputs:
   saveReports:
     description: 'Upload reports for sonar'
-    required: true
+    #required: true
     default: false
     type: boolean
 
