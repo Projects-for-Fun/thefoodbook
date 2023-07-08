@@ -2,8 +2,7 @@ name: PR or push to main
 
 on:
   push:
-    branches:
-      - '*'
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
