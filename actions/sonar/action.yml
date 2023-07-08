@@ -1,0 +1,56 @@
+name: Sonar
+
+inputs:
+  GITHUB_TOKEN:
+    required: true
+    type: string
+  SONAR_TOKEN:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: coverage.out
+        path: ./files
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: coverage-it.out
+        path: ./files
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: report.json
+        path: ./files
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: report-it.json
+        path: ./files
+
+    - name: Display structure of downloaded files
+      run: ls -R
+
+    - name: Merge results
+      run: |
+        touch ./files/coverage-result.out && \
+        touch ./files/report-result.json && \
+        cat ./files/coverage.out ./files/coverage-it.out > ./files/coverage-result.out && \
+        cat ./files/report.json ./files/report-it.json > ./files/report-result.json
+
+    - name: Display structure of downloaded files
+      run: ls -R
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ inputs.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.go.tests.reportPath=files/report-result.json
+          -Dsonar.go.coverage.reportPaths=files/coverage-result.out
+          -Dsonar.sources=.

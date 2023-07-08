@@ -1,9 +1,9 @@
 name: Unit tests
 
 inputs:
-  saveReports:
+  SAVE_REPORTS:
     description: 'Upload reports for sonar'
-    #required: true
+    required: false
     default: false
     type: boolean
 
@@ -28,26 +28,22 @@ runs:
       run: |
         go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
 
-#    - name: Unit tests
-#      run: |
-#        go test ./...
-
-    - name: Upload coverage.out? => ${{ inputs.saveReports }}
+    - name: Upload coverage.out? => ${{ inputs.SAVE_REPORTS }}
       uses: actions/upload-artifact@v3
+      if: ${{ inputs.SAVE_REPORTS }}
       with:
-        if: ${{ inputs.saveReports == true}}
         name: coverage.out
         path: ./files/coverage.out
         if-no-files-found: warn
 
-    - name: Upload report.json? => ${{ inputs.saveReports }}
+    - name: Upload report.json? => ${{ inputs.SAVE_REPORTS }}
       uses: actions/upload-artifact@v3
+      if: ${{ inputs.SAVE_REPORTS }}
       with:
-        if: ${{ inputs.saveReports == true}}
         name: report.json
         path: ./files/report.json
         if-no-files-found: warn
 
-    - name: Display structure of files
-      shell: bash
-      run: ls -R
+#    - name: Display structure of files
+#      shell: bash
+#      run: ls -R

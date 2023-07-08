@@ -3,16 +3,8 @@ name: Linting and testings
 on:
   push:
     branches:
-      - '*'
-
-  workflow_dispatch:
-    inputs:
-      saveReports:
-        description: 'Upload reports for sonar'
-        required: false
-        default: false
-        type: boolean
-
+      # On all commits except from main branch
+      - '!main'
 jobs:
   lint:
     name: Lint
@@ -34,7 +26,7 @@ jobs:
       - name: Run unit tests
         uses: ./actions/unitTests
         with:
-          saveReports: false
+          SAVE_REPORTS: false
 
   integration-tests:
     name: Integration tests
@@ -47,6 +39,6 @@ jobs:
       - name: Run integration tests
         uses: ./actions/integrationTests
         with:
-          saveReports: false
-          dockerHubUsername: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerHubToken: ${{ secrets.DOCKERHUB_TOKEN }}
+          SAVE_REPORTS: false
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

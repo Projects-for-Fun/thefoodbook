@@ -14,29 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          check-latest: true
-          go-version-file: ./go.mod
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-          args: -v -c ./.golangci.yml
-
-          # show only new issues if it's a pull request
-          # only-new-issues: true
-
-          # all caching functionality will be complete disabled, takes precedence over all other caching options
-          # skip-cache: true
-
-          # don't cache or restore ~/go/pkg.
-          # skip-pkg-cache: true
-
-          # don't cache or restore ~/.cache/go-build.
-          # skip-build-cache: true
+      - name: Linting
+        uses: ./actions/linting
 
   unit-tests:
     name: Unit tests
@@ -44,161 +23,46 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          check-latest: true
-          go-version-file: ./go.mod
-
-      - name: Verify dependencies
-        run: go mod verify
-
-      - run: mkdir -p ./files
-
-      - name: Unit tests & generate coverage and report
-        run: |
-          go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
-
-      - name: Unit tests
-        run: |
-          go test ./...
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: coverage.out
-          path: ./files/coverage.out
-          if-no-files-found: warn
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: report.json
-          path: ./files/report.json
-          if-no-files-found: warn
-
-      - name: Display structure of files
-        run: ls -R
-
-  integration-tests:
-    name: Integration tests
-    runs-on: ubuntu-latest
-    needs: [unit-tests]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build infra - neo4j
-        run: docker-compose -f docker-compose.integration-pipeline.yml up -d neo4j
-
-      - name: Build infra - migrate
-        run: docker-compose -f docker-compose.integration-pipeline.yml up -d migrate
-
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          check-latest: true
-          go-version-file: ./go.mod
-
-      - name: Set env vars for integration tests
-        run: |
-          echo "RUN_INTEGRATION_TESTS=1" >> "$GITHUB_ENV" && \
-          echo "ENVIRONMENT=it-pipeline" >> "$GITHUB_ENV" && \
-          echo "SERVICE_NAME=thefoodbook" >> "$GITHUB_ENV" && \
-          echo "SERVICE_PORT=3000" >> "$GITHUB_ENV" && \
-          echo "LOG_LEVEL=info" >> "$GITHUB_ENV" && \
-          echo "LOG_FORMAT=console" >> "$GITHUB_ENV" && \
-          echo "DB_URI=neo4j://neo4j:11223344@localhost:7687" >> "$GITHUB_ENV" && \
-          echo "DB_USER=neo4j" >> "$GITHUB_ENV" && \
-          echo "DB_PASS=11223344" >> "$GITHUB_ENV" && \
-          echo "JWT_KEY=my_random_secret_key_for_testing" >> "$GITHUB_ENV"
-
-      - run: mkdir -p ./files
-
-#      - name: Integration tests & generate report
-#        run: cd ./test/integrationtests && go test -v "./..." -covermode=count -json >> ../../files/report.json
-
-      - name: Integration tests & generate report
-        run: go test -v "./..." -coverpkg="github.com/Projects-for-Fun/thefoodbook/internal/handlers/webservice" -coverprofile="./files/coverage-it.out" -covermode=count -json > ./files/report-it.json
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: report-it.json
-          path: ./files/report-it.json
-          if-no-files-found: warn
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: coverage-it.out
-          path: ./files/coverage-it.out
-          if-no-files-found: warn
-
-      - name: Display structure of files
-        run: ls -R
-
-      - name: Cleanup
-        run: docker-compose -f docker-compose.integration-pipeline.yml down --remove-orphans
-
-  sonarcloud:
-    name: SonarCloud
-    runs-on: ubuntu-latest
-    needs: [lint, unit-tests, integration-tests]
-    steps:
-      - uses: actions/checkout@v2
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
-      - uses: actions/download-artifact@v3
+      - name: Run unit tests
+        uses: ./actions/unitTests
         with:
-          name: coverage.out
-          path: ./files
+          SAVE_REPORTS: true
 
-      - uses: actions/download-artifact@v3
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          name: coverage-it.out
-          path: ./files
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
 
-      - uses: actions/download-artifact@v3
+      - name: Run integration tests
+        uses: ./actions/integrationTests
         with:
-          name: report.json
-          path: ./files
+          SAVE_REPORTS: false
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: actions/download-artifact@v3
+  sonar:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, integration-tests]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Sonar
+        uses: ./actions/sonar
         with:
-          name: report-it.json
-          path: ./files
-
-      - name: Display structure of downloaded files
-        run: ls -R
-
-      - name: Merge results
-        run: |
-          touch ./files/coverage-result.out && \
-          touch ./files/report-result.json && \
-          cat ./files/coverage.out ./files/coverage-it.out > ./files/coverage-result.out && \
-          cat ./files/report.json ./files/report-it.json > ./files/report-result.json
-
-      - name: Display structure of downloaded files
-        run: ls -R
-
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.go.tests.reportPath=files/report-result.json
-            -Dsonar.go.coverage.reportPaths=files/coverage-result.out
-            -Dsonar.sources=.
-
 
   build:
     name: Build
