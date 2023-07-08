@@ -19,6 +19,9 @@ jobs:
           check-latest: true
           go-version-file: ./go.mod
 
+      - name: Download .golangci.yml
+        run: curl https://raw.githubusercontent.com/Projects-for-Fun/golangci/main/.golangci.yml --output .golangci.yml
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
