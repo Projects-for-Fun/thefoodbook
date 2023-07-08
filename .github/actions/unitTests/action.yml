@@ -1,0 +1,52 @@
+name: Unit tests
+
+inputs:
+  saveReports:
+    description: 'Upload reports for sonar'
+    required: true
+    default: false
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        check-latest: true
+        go-version-file: ./go.mod
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - run: mkdir -p ./files
+
+    - name: Unit tests & generate coverage and report
+      run: |
+        go test "./..." -coverprofile="./files/coverage.out" -covermode=count -json > ./files/report.json
+
+#    - name: Unit tests
+#      run: |
+#        go test ./...
+
+    - name: Upload coverage.out? => ${{ inputs.saveReports }}
+      uses: actions/upload-artifact@v3
+      with:
+        if: ${{ inputs.saveReports == true}}
+        name: coverage.out
+        path: ./files/coverage.out
+        if-no-files-found: warn
+
+    - name: Upload report.json? => ${{ inputs.saveReports }}
+      uses: actions/upload-artifact@v3
+      with:
+        if: ${{ inputs.saveReports == true}}
+        name: report.json
+        path: ./files/report.json
+        if-no-files-found: warn
+
+    - name: Display structure of files
+      run: ls -R

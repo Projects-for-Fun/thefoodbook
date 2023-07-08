@@ -1,0 +1,45 @@
+name: Lint
+
+
+# TODO https://github.com/davidomahony/SharedDeployment/tree/main/.github/workflows
+
+
+#inputs:
+#  saveReports:
+#    description: 'Upload reports for sonar'
+#    required: false
+#    default: false
+#    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        check-latest: true
+        go-version-file: ./go.mod
+
+    - name: Download .golangci.yml
+      run: curl https://raw.githubusercontent.com/Projects-for-Fun/golangci/main/.golangci.yml --output /tmp/.golangci.yml
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+        args: -v -c /tmp/.golangci.yml
+
+        # show only new issues if it's a pull request
+        # only-new-issues: true
+
+        # all caching functionality will be complete disabled, takes precedence over all other caching options
+        # skip-cache: true
+
+        # don't cache or restore ~/go/pkg.
+        # skip-pkg-cache: true
+
+        # don't cache or restore ~/.cache/go-build.
+        # skip-build-cache: true
