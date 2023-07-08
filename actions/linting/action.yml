@@ -1,15 +1,11 @@
 name: Lint
 
-
-# TODO https://github.com/davidomahony/SharedDeployment/tree/main/.github/workflows
-
-
-#inputs:
-#  saveReports:
-#    description: 'Upload reports for sonar'
-#    required: false
-#    default: false
-#    type: boolean
+inputs:
+  saveReports:
+    description: 'Upload reports for sonar'
+    required: false
+    default: false
+    type: boolean
 
 runs:
   using: "composite"
